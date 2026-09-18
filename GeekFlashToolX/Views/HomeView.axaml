@@ -1,0 +1,95 @@
+<UserControl
+    x:Class="GeekFlashToolX.Views.HomeView"
+    x:DataType="vm:HomeViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+    xmlns:vm="using:GeekFlashToolX.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel
+            Classes="page"
+            MaxWidth="1180"
+            Spacing="{StaticResource Space6}">
+            <StackPanel Spacing="{StaticResource Space2}">
+                <TextBlock Classes="eyebrow mono" Text="{Binding Eyebrow}" />
+                <TextBlock Classes="h1" Text="{Binding Title}" />
+                <TextBlock
+                    Classes="body"
+                    HorizontalAlignment="Left"
+                    MaxWidth="760"
+                    Text="{Binding Subtitle}" />
+            </StackPanel>
+
+            <Border Classes="hero">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                    <StackPanel Spacing="{StaticResource Space3}">
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space2}">
+                            <Ellipse
+                                Fill="{DynamicResource SuccessBrush}"
+                                Height="9"
+                                Width="9" />
+                            <TextBlock Classes="caption mono" Text="CORE ONLINE" />
+                        </StackPanel>
+                        <TextBlock Classes="display" Text="Geek Flash X" />
+                        <TextBlock Classes="body" Text="{Binding WorkspaceBody}" />
+                    </StackPanel>
+                    <Border
+                        Background="{DynamicResource AccentMutedBrush}"
+                        Classes="hero-art"
+                        CornerRadius="56"
+                        Grid.Column="1"
+                        Height="112"
+                        Margin="32,0,0,0"
+                        Width="112">
+                        <iconPacks:PackIconCodicons
+                            Foreground="{DynamicResource AccentBrush}"
+                            Height="48"
+                            HorizontalAlignment="Center"
+                            Kind="Pulse"
+                            VerticalAlignment="Center"
+                            Width="48" />
+                    </Border>
+                    <Button
+                        Classes="primary"
+                        Command="{Binding OpenDialogCommand}"
+                        Content="{Binding Action}"
+                        Grid.Row="1"
+                        HorizontalAlignment="Left"
+                        Margin="0,24,0,0" />
+                </Grid>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="{StaticResource Space4}">
+                <Border Classes="card" Grid.Column="0">
+                    <StackPanel Spacing="{StaticResource Space2}">
+                        <TextBlock Classes="caption mono" Text="{Binding DeviceTitle}" />
+                        <TextBlock Classes="h2" Text="{Binding DeviceValue}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Grid.Column="1">
+                    <StackPanel Spacing="{StaticResource Space2}">
+                        <TextBlock Classes="caption mono" Text="{Binding EngineTitle}" />
+                        <TextBlock Classes="h2" Text="{Binding EngineValue}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Grid.Column="2">
+                    <StackPanel Spacing="{StaticResource Space2}">
+                        <TextBlock Classes="caption mono" Text="{Binding SafetyTitle}" />
+                        <TextBlock Classes="h2" Text="{Binding SafetyValue}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Classes="card">
+                <StackPanel Spacing="{StaticResource Space3}">
+                    <TextBlock Classes="h2" Text="{Binding WorkspaceTitle}" />
+                    <TextBlock
+                        Classes="body"
+                        HorizontalAlignment="Left"
+                        MaxWidth="760"
+                        Text="{Binding WorkspaceBody}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

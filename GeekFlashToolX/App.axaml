@@ -1,0 +1,31 @@
+<Application
+    RequestedThemeVariant="Default"
+    x:Class="GeekFlashToolX.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:views="using:GeekFlashToolX.Views"
+    xmlns:vm="using:GeekFlashToolX.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.DataTemplates>
+        <DataTemplate DataType="{x:Type vm:HomeViewModel}" x:DataType="vm:HomeViewModel">
+            <views:HomeView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:OtherViewModel}" x:DataType="vm:OtherViewModel">
+            <views:OtherView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}" x:DataType="vm:SettingsViewModel">
+            <views:SettingsView />
+        </DataTemplate>
+    </Application.DataTemplates>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GeekFlashToolX/Resources/Tokens.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://GeekFlashToolX/Styles/IconPacks.axaml" />
+        <StyleInclude Source="avares://GeekFlashToolX/Styles/Components.axaml" />
+    </Application.Styles>
+</Application>

@@ -1,0 +1,83 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:sys="using:System"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="SurfaceBackgroundBrush">#F3F5F8</SolidColorBrush>
+            <SolidColorBrush x:Key="SurfaceBrush">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="SurfaceElevatedBrush">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="SurfaceMutedBrush">#EDF0F5</SolidColorBrush>
+            <SolidColorBrush x:Key="SidebarBrush">#F9FAFC</SolidColorBrush>
+            <SolidColorBrush x:Key="TextPrimaryBrush">#101828</SolidColorBrush>
+            <SolidColorBrush x:Key="TextSecondaryBrush">#344054</SolidColorBrush>
+            <SolidColorBrush x:Key="TextMutedBrush">#667085</SolidColorBrush>
+            <SolidColorBrush x:Key="TextOnAccentBrush">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="BorderBrush">#DCE2EA</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentBrush">#2F81F7</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentButtonBrush">#2972D9</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentMutedBrush">#182F81F7</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentTextBrush">#235FBE</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentHoverBrush">#2A72DB</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentPressedBrush">#235FBE</SolidColorBrush>
+            <SolidColorBrush x:Key="DangerBrush">#C92E43</SolidColorBrush>
+            <SolidColorBrush x:Key="SuccessBrush">#168A52</SolidColorBrush>
+            <SolidColorBrush x:Key="CodeSurfaceBrush">#EBF0F8</SolidColorBrush>
+            <LinearGradientBrush EndPoint="100%,100%" StartPoint="0%,0%" x:Key="SplashGradientBrush">
+                <GradientStop Color="#E7F1FF" Offset="0" />
+                <GradientStop Color="#F8FAFC" Offset="1" />
+            </LinearGradientBrush>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="SurfaceBackgroundBrush">#111419</SolidColorBrush>
+            <SolidColorBrush x:Key="SurfaceBrush">#171B22</SolidColorBrush>
+            <SolidColorBrush x:Key="SurfaceElevatedBrush">#1C212A</SolidColorBrush>
+            <SolidColorBrush x:Key="SurfaceMutedBrush">#242B36</SolidColorBrush>
+            <SolidColorBrush x:Key="SidebarBrush">#151920</SolidColorBrush>
+            <SolidColorBrush x:Key="TextPrimaryBrush">#F0F3F8</SolidColorBrush>
+            <SolidColorBrush x:Key="TextSecondaryBrush">#C5CEDA</SolidColorBrush>
+            <SolidColorBrush x:Key="TextMutedBrush">#98A6B8</SolidColorBrush>
+            <SolidColorBrush x:Key="TextOnAccentBrush">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="BorderBrush">#303947</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentBrush">#58A6FF</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentButtonBrush">#2972D9</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentMutedBrush">#2458A6FF</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentTextBrush">#83B6FF</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentHoverBrush">#2A72DB</SolidColorBrush>
+            <SolidColorBrush x:Key="AccentPressedBrush">#235FBE</SolidColorBrush>
+            <SolidColorBrush x:Key="DangerBrush">#C92E43</SolidColorBrush>
+            <SolidColorBrush x:Key="SuccessBrush">#3DDC97</SolidColorBrush>
+            <SolidColorBrush x:Key="CodeSurfaceBrush">#181F2B</SolidColorBrush>
+            <LinearGradientBrush EndPoint="100%,100%" StartPoint="0%,0%" x:Key="SplashGradientBrush">
+                <GradientStop Color="#162A45" Offset="0" />
+                <GradientStop Color="#111419" Offset="1" />
+            </LinearGradientBrush>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <sys:Double x:Key="Space1">4</sys:Double>
+    <sys:Double x:Key="Space2">8</sys:Double>
+    <sys:Double x:Key="Space3">12</sys:Double>
+    <sys:Double x:Key="Space4">16</sys:Double>
+    <sys:Double x:Key="Space5">20</sys:Double>
+    <sys:Double x:Key="Space6">24</sys:Double>
+    <sys:Double x:Key="Space8">32</sys:Double>
+    <Thickness x:Key="PaddingPage">32,28</Thickness>
+    <Thickness x:Key="PaddingCard">20</Thickness>
+    <Thickness x:Key="Inset2">8</Thickness>
+    <Thickness x:Key="Inset4">16</Thickness>
+    <CornerRadius x:Key="RadiusSm">6</CornerRadius>
+    <CornerRadius x:Key="RadiusMd">10</CornerRadius>
+    <CornerRadius x:Key="RadiusLg">14</CornerRadius>
+    <CornerRadius x:Key="RadiusXl">20</CornerRadius>
+    <BoxShadows x:Key="ShadowSm">0 2 6 0 #08000000</BoxShadows>
+    <BoxShadows x:Key="ShadowMd">0 12 28 -8 #30000000</BoxShadows>
+    <sys:Double x:Key="FontSizeXs">12</sys:Double>
+    <sys:Double x:Key="FontSizeSm">13</sys:Double>
+    <sys:Double x:Key="FontSizeBase">14</sys:Double>
+    <sys:Double x:Key="FontSizeMd">16</sys:Double>
+    <sys:Double x:Key="FontSizeLg">20</sys:Double>
+    <sys:Double x:Key="FontSizeXl">28</sys:Double>
+    <sys:Double x:Key="FontSizeDisplay">38</sys:Double>
+
+</ResourceDictionary>

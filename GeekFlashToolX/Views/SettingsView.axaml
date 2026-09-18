@@ -1,0 +1,143 @@
+<UserControl
+    x:Class="GeekFlashToolX.Views.SettingsView"
+    x:DataType="vm:SettingsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:core="using:GeekFlashToolX.Core.Models"
+    xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+    xmlns:vm="using:GeekFlashToolX.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel
+            Classes="page"
+            MaxWidth="920"
+            Spacing="{StaticResource Space6}">
+            <StackPanel Spacing="{StaticResource Space2}">
+                <TextBlock Classes="eyebrow mono" Text="{Binding Eyebrow}" />
+                <TextBlock Classes="h1" Text="{Binding Title}" />
+                <TextBlock
+                    Classes="body"
+                    HorizontalAlignment="Left"
+                    MaxWidth="720"
+                    Text="{Binding Subtitle}" />
+            </StackPanel>
+
+            <Border Classes="card">
+                <StackPanel Spacing="{StaticResource Space4}">
+                    <StackPanel Spacing="{StaticResource Space1}">
+                        <TextBlock Classes="h2" Text="{Binding AppearanceTitle}" />
+                        <TextBlock Classes="caption" Text="{Binding AppearanceBody}" />
+                    </StackPanel>
+                    <Border Classes="setting-row">
+                        <Grid ColumnDefinitions="*,240" ColumnSpacing="24">
+                            <TextBlock Text="{Binding ThemeLabel}" VerticalAlignment="Center" />
+                            <ComboBox
+                                AutomationProperties.Name="{Binding ThemeLabel}"
+                                Classes="settings-select"
+                                Grid.Column="1"
+                                ItemsSource="{Binding ThemeOptions}"
+                                SelectedItem="{Binding SelectedTheme}"
+                                x:Name="ThemeComboBox">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ThemeOption">
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Border>
+                    <Border Classes="setting-row">
+                        <Grid ColumnDefinitions="*,240" ColumnSpacing="24">
+                            <TextBlock Text="{Binding LanguageLabel}" VerticalAlignment="Center" />
+                            <ComboBox
+                                AutomationProperties.Name="{Binding LanguageLabel}"
+                                Classes="settings-select"
+                                Grid.Column="1"
+                                ItemsSource="{Binding Languages}"
+                                SelectedItem="{Binding SelectedLanguage}"
+                                x:Name="LanguageComboBox">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="core:LanguageOption">
+                                        <TextBlock Text="{Binding NativeName}" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Border>
+                    <Border Classes="setting-row">
+                        <Grid ColumnDefinitions="*,240" ColumnSpacing="24">
+                            <TextBlock Text="{Binding AccentLabel}" VerticalAlignment="Center" />
+                            <ComboBox
+                                AutomationProperties.Name="{Binding AccentLabel}"
+                                Classes="settings-select"
+                                Grid.Column="1"
+                                ItemsSource="{Binding AccentOptions}"
+                                SelectedItem="{Binding SelectedAccent}"
+                                x:Name="AccentComboBox">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:AccentOption">
+                                        <StackPanel
+                                            Orientation="Horizontal"
+                                            Spacing="{StaticResource Space2}"
+                                            VerticalAlignment="Center">
+                                            <Ellipse
+                                                Fill="{Binding Hex}"
+                                                Height="12"
+                                                Width="12" />
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Margin="0,0,24,0" Spacing="{StaticResource Space1}">
+                        <TextBlock Classes="h2" Text="{Binding AnimationTitle}" />
+                        <TextBlock
+                            Classes="caption"
+                            Text="{Binding AnimationBody}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <ToggleSwitch
+                        AutomationProperties.Name="{Binding AnimationTitle}"
+                        Grid.Column="1"
+                        IsChecked="{Binding AnimationsEnabled}"
+                        OffContent=""
+                        OnContent=""
+                        VerticalAlignment="Center"
+                        x:Name="AnimationSwitch" />
+                </Grid>
+            </Border>
+
+            <Border Classes="settings-file-panel">
+                <StackPanel Spacing="{StaticResource Space2}">
+                    <TextBlock Classes="caption" Text="{Binding SettingsPathLabel}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBox
+                            AutomationProperties.Name="{Binding SettingsPathLabel}"
+                            Classes="settings-path"
+                            IsReadOnly="True"
+                            Text="{Binding SettingsPath}"
+                            TextWrapping="NoWrap"
+                            x:Name="SettingsPathBox" />
+                        <Button
+                            AutomationProperties.Name="{Binding CopySettingsPathLabel}"
+                            Classes="icon-button"
+                            Click="OnCopySettingsPath"
+                            Grid.Column="1"
+                            ToolTip.Tip="{Binding CopySettingsPathLabel}">
+                            <iconPacks:PackIconCodicons
+                                Height="18"
+                                Kind="Copy"
+                                Width="18" />
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

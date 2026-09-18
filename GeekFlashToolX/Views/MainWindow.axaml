@@ -1,0 +1,213 @@
+<Window
+    Background="{DynamicResource SurfaceBackgroundBrush}"
+    Classes.no-motion="{Binding AnimationsDisabled}"
+    ExtendClientAreaTitleBarHeightHint="0"
+    ExtendClientAreaToDecorationsHint="True"
+    Height="800"
+    Icon="/Assets/logo_icon.ico"
+    MinHeight="560"
+    MinWidth="760"
+    Title="GeekFlashTool - X"
+    WindowDecorations="BorderOnly"
+    WindowStartupLocation="CenterOwner"
+    x:Class="GeekFlashToolX.Views.MainWindow"
+    x:DataType="vm:MainViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+    xmlns:vm="using:GeekFlashToolX.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid RowDefinitions="48,*">
+        <Border
+            Background="{DynamicResource SidebarBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="0,0,0,1"
+            x:Name="TitleBar">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button
+                    AutomationProperties.Name="{Binding ToggleSidebarLabel}"
+                    Classes="title-button"
+                    Command="{Binding ToggleSidebarCommand}"
+                    HotKey="Ctrl+B"
+                    Margin="12,4,8,4"
+                    ToolTip.Tip="{Binding ToggleSidebarLabel}"
+                    x:Name="ToggleSidebarButton">
+                    <iconPacks:PackIconCodicons
+                        Height="18"
+                        Kind="LayoutSidebarLeft"
+                        Width="18" />
+                </Button>
+                <Border
+                    Background="Transparent"
+                    Grid.Column="1"
+                    PointerPressed="OnTitleBarPointerPressed">
+                    <TextBlock
+                        Classes="brand"
+                        IsHitTestVisible="False"
+                        Text="{Binding AppName}"
+                        VerticalAlignment="Center" />
+                </Border>
+                <StackPanel
+                    Grid.Column="2"
+                    Margin="0,4,8,4"
+                    Orientation="Horizontal"
+                    Spacing="4">
+                    <Button
+                        AutomationProperties.Name="{Binding MinimizeLabel}"
+                        Classes="title-button"
+                        Click="OnMinimize"
+                        ToolTip.Tip="{Binding MinimizeLabel}"
+                        x:Name="MinimizeButton">
+                        <PathIcon
+                            Data="M 0,6 L 12,6 12,7 0,7 Z"
+                            Height="12"
+                            Width="12" />
+                    </Button>
+                    <Button
+                        AutomationProperties.Name="{Binding MaximizeLabel}"
+                        Classes="title-button"
+                        Click="OnMaximize"
+                        ToolTip.Tip="{Binding MaximizeLabel}"
+                        x:Name="MaximizeButton">
+                        <Panel Height="12" Width="12">
+                            <PathIcon
+                                Classes="maximize-glyph"
+                                Data="M 0,0 H 12 V 12 H 0 Z M 1,1 V 11 H 11 V 1 Z"
+                                Height="12"
+                                Width="12" />
+                            <PathIcon
+                                Classes="restore-glyph"
+                                Data="M 3,0 H 12 V 9 H 9 V 12 H 0 V 3 H 3 Z M 4,1 V 3 H 9 V 8 H 11 V 1 Z M 1,4 V 11 H 8 V 4 Z"
+                                Height="12"
+                                Width="12" />
+                        </Panel>
+                    </Button>
+                    <Button
+                        AutomationProperties.Name="{Binding CloseLabel}"
+                        Classes="title-button close"
+                        Click="OnClose"
+                        ToolTip.Tip="{Binding CloseLabel}"
+                        x:Name="CloseButton">
+                        <PathIcon
+                            Data="M 1,0 L 6,5 11,0 12,1 7,6 12,11 11,12 6,7 1,12 0,11 5,6 0,1 Z"
+                            Height="12"
+                            Width="12" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <SplitView
+            CompactPaneLength="72"
+            DisplayMode="CompactInline"
+            Grid.Row="1"
+            IsPaneOpen="{Binding IsSidebarExpanded, Mode=TwoWay}"
+            OpenPaneLength="232"
+            PaneBackground="{DynamicResource SidebarBrush}"
+            x:Name="NavigationShell">
+            <SplitView.Pane>
+                <Border
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="0,0,1,0"
+                    x:Name="Sidebar">
+                    <Grid Margin="12,20,12,16" RowDefinitions="Auto,*,Auto">
+                        <Grid ColumnDefinitions="48,*" Margin="0,0,0,28">
+                            <Border
+                                Background="{DynamicResource AccentMutedBrush}"
+                                CornerRadius="12"
+                                Height="44"
+                                Width="44">
+                                <Image
+                                    Height="38"
+                                    Source="/Assets/logo.png"
+                                    Stretch="Uniform"
+                                    Width="38" />
+                            </Border>
+                            <StackPanel
+                                Classes="nav-label"
+                                Grid.Column="1"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center">
+                                <TextBlock Classes="brand" Text="{Binding AppName}" />
+                                <TextBlock Classes="caption" Text="{Binding AppTagline}" />
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Grid.Row="1" Spacing="8">
+                            <Button
+                                AutomationProperties.Name="{Binding HomeLabel}"
+                                Classes="nav"
+                                Classes.active="{Binding IsHomeActive}"
+                                Command="{Binding NavigateHomeCommand}"
+                                ToolTip.Tip="{Binding HomeLabel}"
+                                x:Name="HomeNavigation">
+                                <Grid ColumnDefinitions="20,*" ColumnSpacing="14">
+                                    <iconPacks:PackIconCodicons Kind="Home" />
+                                    <TextBlock
+                                        Classes="nav-label"
+                                        Grid.Column="1"
+                                        Text="{Binding HomeLabel}"
+                                        VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
+                            <Button
+                                AutomationProperties.Name="{Binding OtherLabel}"
+                                Classes="nav"
+                                Classes.active="{Binding IsOtherActive}"
+                                Command="{Binding NavigateOtherCommand}"
+                                ToolTip.Tip="{Binding OtherLabel}"
+                                x:Name="OtherNavigation">
+                                <Grid ColumnDefinitions="20,*" ColumnSpacing="14">
+                                    <iconPacks:PackIconCodicons Kind="Extensions" />
+                                    <TextBlock
+                                        Classes="nav-label"
+                                        Grid.Column="1"
+                                        Text="{Binding OtherLabel}"
+                                        VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+                        <Button
+                            AutomationProperties.Name="{Binding SettingsLabel}"
+                            Classes="nav"
+                            Classes.active="{Binding IsSettingsActive}"
+                            Command="{Binding NavigateSettingsCommand}"
+                            Grid.Row="2"
+                            ToolTip.Tip="{Binding SettingsLabel}"
+                            x:Name="SettingsNavigation">
+                            <Grid ColumnDefinitions="20,*" ColumnSpacing="14">
+                                <iconPacks:PackIconCodicons Kind="SettingsGear" />
+                                <TextBlock
+                                    Classes="nav-label"
+                                    Grid.Column="1"
+                                    Text="{Binding SettingsLabel}"
+                                    VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+                    </Grid>
+                </Border>
+            </SplitView.Pane>
+            <Grid RowDefinitions="*,Auto">
+                <TransitioningContentControl
+                    ClipToBounds="True"
+                    Content="{Binding CurrentPage}"
+                    HorizontalContentAlignment="Stretch"
+                    PageTransition="{Binding PageTransition}"
+                    VerticalContentAlignment="Stretch"
+                    x:Name="PageHost" />
+                <Border Classes="footer" Grid.Row="1">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Ellipse
+                                Fill="{DynamicResource SuccessBrush}"
+                                Height="6"
+                                Width="6" />
+                            <TextBlock Classes="caption" Text="{Binding ReadyLabel}" />
+                        </StackPanel>
+                        <TextBlock
+                            Classes="caption mono"
+                            Grid.Column="2"
+                            Text="{Binding AppVersion}" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </SplitView>
+    </Grid>
+</Window>

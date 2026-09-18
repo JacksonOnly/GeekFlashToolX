@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="GeekFlashToolX.Core/GeekFlashToolX.Core.csproj" />
+  <Project Path="GeekFlashToolX.Services/GeekFlashToolX.Services.csproj" />
+  <Project Path="GeekFlashToolX/GeekFlashToolX.csproj" />
+</Solution>

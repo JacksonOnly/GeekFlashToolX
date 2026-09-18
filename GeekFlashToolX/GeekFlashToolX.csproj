@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0-windows7</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <IsAotCompatible>true</IsAotCompatible>
+        <InvariantGlobalization>false</InvariantGlobalization>
+        <Version>1.0.0</Version>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <ApplicationIcon>Assets\logo_icon.ico</ApplicationIcon>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <PublishAot>true</PublishAot>
+        <SupportedOSPlatformVersion>5.1</SupportedOSPlatformVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**"/>
+        <Content Include="Langs\**\*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="12.1.2" />
+        <PackageReference Include="Avalonia.Desktop" Version="12.1.2" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.2" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.2" />
+        <PackageReference Include="IconPacks.Avalonia.Codicons" Version="2.0.0"/>
+        <PackageReference Include="ReactiveUI.Avalonia" Version="12.1.2" />
+        <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="VC-LTL" Version="5.3.1" />
+        <PackageReference Include="YY-Thunks" Version="1.2.3-Beta.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GeekFlashToolX.Core\GeekFlashToolX.Core.csproj"/>
+        <ProjectReference Include="..\GeekFlashToolX.Services\GeekFlashToolX.Services.csproj"/>
+    </ItemGroup>
+</Project>

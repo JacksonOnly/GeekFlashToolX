@@ -1,0 +1,45 @@
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        IconPacks.Avalonia 2.0 ships a precompiled Avalonia 11 theme. The icon
+        control and its vector data remain compatible with Avalonia 12, so this
+        local theme recompiles the package's official template shape against
+        the app's Avalonia version. No icon geometry is defined here.
+    -->
+    <Styles.Resources>
+        <ControlTemplate TargetType="iconPacks:PackIconCodicons" x:Key="GeekFlashToolX.PackIconCodicons.Template">
+            <Border
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                ClipToBounds="{TemplateBinding ClipToBounds}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}">
+                <Grid x:Name="PART_InnerGrid">
+                    <Viewbox x:Name="PART_ViewBox">
+                        <Path
+                            Data="{TemplateBinding Data}"
+                            Fill="{TemplateBinding Foreground}"
+                            Stretch="Uniform"
+                            UseLayoutRounding="False"
+                            x:Name="PART_IconPath" />
+                    </Viewbox>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+
+        <ControlTheme TargetType="iconPacks:PackIconCodicons" x:Key="{x:Type iconPacks:PackIconCodicons}">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="ClipToBounds" Value="True" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="FlowDirection" Value="LeftToRight" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template" Value="{StaticResource GeekFlashToolX.PackIconCodicons.Template}" />
+        </ControlTheme>
+    </Styles.Resources>
+</Styles>

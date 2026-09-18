@@ -1,0 +1,70 @@
+<Window
+    CanResize="False"
+    Height="320"
+    Icon="/Assets/logo_icon.ico"
+    ShowInTaskbar="True"
+    TransparencyLevelHint="AcrylicBlur,Blur,None"
+    Width="520"
+    WindowDecorations="None"
+    WindowStartupLocation="CenterScreen"
+    x:Class="GeekFlashToolX.Views.SplashWindow"
+    x:DataType="vm:SplashViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:vm="using:GeekFlashToolX.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Classes="splash-shell">
+        <Grid RowDefinitions="*,Auto">
+            <StackPanel
+                HorizontalAlignment="Center"
+                Spacing="{StaticResource Space5}"
+                VerticalAlignment="Center">
+                <Border Classes="splash-logo">
+                    <Image
+                        Height="80"
+                        Opacity="0"
+                        RenderTransform="scale(0.78)"
+                        Source="/Assets/logo.png"
+                        Stretch="Uniform"
+                        Width="80"
+                        x:Name="LogoImage">
+                        <Image.Transitions>
+                            <Transitions>
+                                <DoubleTransition
+                                    Duration="0:0:0.48"
+                                    Easing="CubicEaseOut"
+                                    Property="Opacity" />
+                                <TransformOperationsTransition
+                                    Duration="0:0:0.62"
+                                    Easing="CubicEaseOut"
+                                    Property="RenderTransform" />
+                            </Transitions>
+                        </Image.Transitions>
+                    </Image>
+                </Border>
+                <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space2}">
+                    <TextBlock
+                        Classes="display"
+                        HorizontalAlignment="Center"
+                        Text="GeekFlashTool - X" />
+                    <TextBlock
+                        Classes="caption mono"
+                        HorizontalAlignment="Center"
+                        Text="Open Source on GitHub/Gitee" />
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Spacing="{StaticResource Space3}">
+                <ProgressBar
+                    Classes="splash-progress"
+                    Height="6"
+                    Maximum="100"
+                    Minimum="0"
+                    Value="{Binding Progress}" />
+                <TextBlock
+                    AutomationProperties.LiveSetting="Polite"
+                    Classes="caption"
+                    HorizontalAlignment="Center"
+                    Text="{Binding Status}" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

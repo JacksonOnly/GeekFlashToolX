@@ -80,9 +80,9 @@
                                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="8,8,8,0">
                                     <iconPacks:PackIconCodicons Kind="{Binding Icon}" Width="22" Height="22"
                                                                Foreground="{DynamicResource AccentBrush}" />
-                                    <TextBlock Grid.Column="1" Classes="h2" Text="{Binding Title}" />
+                                    <TextBlock Grid.Column="1" Classes="h2" Text="{I18 {Binding TitleKey}}" />
                                 </Grid>
-                                <TextBlock Classes="caption" Text="{Binding Description}" Margin="8,0" MinHeight="36" />
+                                <TextBlock Classes="caption" Text="{I18 {Binding DescriptionKey}}" Margin="8,0" MinHeight="36" />
                                 <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="8,0" />
                                 <ItemsControl ItemsSource="{Binding Links}">
                                     <ItemsControl.ItemTemplate>
@@ -90,10 +90,10 @@
                                             <Button Classes="resource-link"
                                                     Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenLinkCommand}"
                                                     CommandParameter="{Binding Url}"
-                                                    ToolTip.Tip="{Binding Url}" AutomationProperties.Name="{Binding Title}">
+                                                    ToolTip.Tip="{Binding Url}" AutomationProperties.Name="{I18 {Binding TitleKey}}">
                                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                                     <StackPanel Spacing="4">
-                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                        <TextBlock Text="{I18 {Binding TitleKey}}" FontWeight="SemiBold" TextWrapping="Wrap" />
                                                         <TextBlock Classes="caption" Text="{Binding Host}" FontSize="11"
                                                                    TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                                                     </StackPanel>

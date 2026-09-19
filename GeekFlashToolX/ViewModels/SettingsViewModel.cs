@@ -49,7 +49,7 @@ public sealed class SettingsViewModel : ViewModelBase
     }
 
     public string SettingsPath => _settingsService.SettingsFilePath;
-    public string CheckUpdatesLabel => String(IsCheckingUpdates ? "Update.Checking" : "Update.CheckTitle");
+    public string CheckUpdatesKey => IsCheckingUpdates ? "Update.Checking" : "Update.CheckTitle";
     public ICommand CheckUpdatesCommand { get; }
 
     public bool IsCheckingUpdates
@@ -58,7 +58,7 @@ public sealed class SettingsViewModel : ViewModelBase
         private set
         {
             this.RaiseAndSetIfChanged(ref _isCheckingUpdates, value);
-            this.RaisePropertyChanged(nameof(CheckUpdatesLabel));
+            this.RaisePropertyChanged(nameof(CheckUpdatesKey));
         }
     }
 

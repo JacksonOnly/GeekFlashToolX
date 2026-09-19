@@ -7,8 +7,14 @@ using ReactiveUI;
 
 namespace GeekFlashToolX.ViewModels;
 
-public sealed record LogFilterOption(WorkLogStatus? Value, string Name);
-public sealed record LogPeriodOption(int Days, string Name);
+public sealed record LogFilterOption(WorkLogStatus? Value)
+{
+    public string NameKey => Value is { } status ? $"LogStatus.{status}" : "Logs.AllStatus";
+}
+public sealed record LogPeriodOption(int Days)
+{
+    public string NameKey => $"Logs.Period{Days}";
+}
 public sealed record LogRow(WorkLogInfo Info, string StatusText)
 {
     public string Title => Info.Title;
@@ -44,7 +50,7 @@ public sealed class LogsViewModel : ViewModelBase
         OpenFolderCommand = ReactiveCommand.CreateFromTask(OpenFolderAsync);
     }
 
-    public string CountLabel => FormatString("Logs.Count", _rows.Count);
+    public int Count => _rows.Count;
     public string LogDirectory => _logs.LogDirectory;
     public bool IsEmpty => _rows.Count == 0;
     public bool HasError => !string.IsNullOrEmpty(Error);
@@ -112,7 +118,7 @@ public sealed class LogsViewModel : ViewModelBase
             }
             Error = _logs.LastError ?? "";
             this.RaisePropertyChanged(nameof(IsEmpty));
-            this.RaisePropertyChanged(nameof(CountLabel));
+            this.RaisePropertyChanged(nameof(Count));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -137,10 +143,10 @@ public sealed class LogsViewModel : ViewModelBase
         var status = _selectedStatus?.Value;
         var days = _selectedPeriod?.Days ?? 0;
         StatusOptions.Clear();
-        StatusOptions.Add(new(null, String("Logs.AllStatus")));
-        foreach (var value in Enum.GetValues<WorkLogStatus>()) StatusOptions.Add(new(value, String($"LogStatus.{value}")));
+        StatusOptions.Add(new(null));
+        foreach (var value in Enum.GetValues<WorkLogStatus>()) StatusOptions.Add(new(value));
         PeriodOptions.Clear();
-        foreach (var value in new[] { 0, 1, 7, 30 }) PeriodOptions.Add(new(value, String($"Logs.Period{value}")));
+        foreach (var value in new[] { 0, 1, 7, 30 }) PeriodOptions.Add(new(value));
         _selectedStatus = StatusOptions.First(option => option.Value == status);
         _selectedPeriod = PeriodOptions.First(option => option.Days == days);
     }

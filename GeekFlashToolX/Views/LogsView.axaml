@@ -67,7 +67,7 @@
                         x:Name="LogStatusFilter">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:LogFilterOption">
-                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text="{I18 {Binding NameKey}}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -79,7 +79,7 @@
                         x:Name="LogPeriodFilter">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:LogPeriodOption">
-                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text="{I18 {Binding NameKey}}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -115,7 +115,7 @@
             ColumnDefinitions="Auto,*"
             ColumnSpacing="{StaticResource Space4}"
             Grid.Row="4">
-            <TextBlock Classes="caption" Text="{Binding CountLabel}" />
+            <TextBlock Classes="caption" Text="{I18 Logs.Count, Arg1={Binding Count}}" />
             <TextBlock
                 Classes="caption"
                 Grid.Column="1"

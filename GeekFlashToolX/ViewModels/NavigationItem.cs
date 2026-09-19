@@ -28,7 +28,6 @@ public sealed class NavigationItem(
 
     public PageKey Key { get; } = key;
     public string TitleKey { get; } = titleKey;
-    public string Title => String(TitleKey);
     public PackIconCodiconsKind Icon { get; } = icon;
     public ViewModelBase Page { get; } = page;
     public NavigationPlacement Placement { get; } = placement;

@@ -19,19 +19,19 @@
     <Window.Resources>
         <DataTemplate x:DataType="vm:NavigationItem" x:Key="NavigationTemplate">
             <Button
-                AutomationProperties.Name="{Binding Title}"
+                AutomationProperties.Name="{I18 {Binding TitleKey}}"
                 Classes="nav"
                 Classes.active="{Binding IsSelected}"
                 Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).NavigateToCommand}"
                 CommandParameter="{Binding Key}"
                 HorizontalAlignment="Stretch"
-                ToolTip.Tip="{Binding Title}">
+                ToolTip.Tip="{I18 {Binding TitleKey}}">
                 <Grid ColumnDefinitions="20,*" ColumnSpacing="14">
                     <iconPacks:PackIconCodicons Kind="{Binding Icon}" />
                     <TextBlock
                         Classes="nav-label"
                         Grid.Column="1"
-                        Text="{Binding Title}" />
+                        Text="{I18 {Binding TitleKey}}" />
                 </Grid>
             </Button>
         </DataTemplate>

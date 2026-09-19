@@ -135,7 +135,7 @@
                     <Button
                         Classes="primary"
                         Command="{Binding CheckUpdatesCommand}"
-                        Content="{Binding CheckUpdatesLabel}"
+                        Content="{I18 {Binding CheckUpdatesKey}}"
                         HorizontalAlignment="Left"
                         IsEnabled="{Binding !IsCheckingUpdates}"
                         x:Name="CheckUpdatesButton" />

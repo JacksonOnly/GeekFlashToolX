@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Avalonia.Controls;
-using Avalonia.Threading;
 using GeekFlashToolX.Core.Models;
 using GeekFlashToolX.Core.Services;
 using ReactiveUI;
@@ -25,7 +24,6 @@ public sealed class LogsViewModel : ViewModelBase
     private readonly ILogService _logs;
     private readonly ILocalizationService _localization;
     private readonly IExternalLauncher _launcher;
-    private readonly DispatcherTimer _timer;
     private readonly ObservableCollection<LogRow> _rows = [];
     private string _search = "";
     private string _error = "";
@@ -33,7 +31,7 @@ public sealed class LogsViewModel : ViewModelBase
     private bool _disposed;
     private LogFilterOption? _selectedStatus;
     private LogPeriodOption? _selectedPeriod;
-    private FlatTreeDataGridSource<LogRow> _source = null!;
+    private FlatTreeDataGridSource<LogRow> _source;
 
     public LogsViewModel(ILocalizationService localization, ILogService logs, IExternalLauncher launcher) : base(localization)
     {
@@ -44,8 +42,6 @@ public sealed class LogsViewModel : ViewModelBase
         _source = CreateSource();
         RefreshCommand = ReactiveCommand.CreateFromTask(RefreshAsync);
         OpenFolderCommand = ReactiveCommand.CreateFromTask(OpenFolderAsync);
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
-        _timer.Tick += OnTick;
     }
 
     public string CountLabel => FormatString("Logs.Count", _rows.Count);
@@ -89,15 +85,7 @@ public sealed class LogsViewModel : ViewModelBase
         source.RowSelection!.SingleSelect = true;
         return source;
     }
-
-    public void SetActive(bool active)
-    {
-        if (active) { _timer.Start(); _ = RefreshAsync(); }
-        else _timer.Stop();
-    }
-
-    private async void OnTick(object? sender, EventArgs args) => await RefreshAsync();
-
+    
     public async Task RefreshAsync()
     {
         if (_busy || _disposed) return;
@@ -170,8 +158,6 @@ public sealed class LogsViewModel : ViewModelBase
     public override void Dispose()
     {
         _disposed = true;
-        _timer.Stop();
-        _timer.Tick -= OnTick;
         Source.Dispose();
         base.Dispose();
     }

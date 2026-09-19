@@ -86,14 +86,17 @@ public partial class App : Application
             var remainingSplashTime = TimeSpan.FromSeconds(2) - splashStarted.Elapsed;
             if (remainingSplashTime > TimeSpan.Zero)
                 await Task.Delay(remainingSplashTime);
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 var localization = Resolve<ILocalizationService>();
                 var settings = Resolve<IAppSettingsService>();
                 var appearance = Resolve<IAppearanceService>();
+                
+                
                 var home = new HomeViewModel(localization, Resolve<IExternalLauncher>());
                 var settingsPage = new SettingsViewModel(settings, localization, appearance, Resolve<IUpdateCoordinator>());
                 var logsPage = new LogsViewModel(localization, Resolve<ILogService>(), Resolve<IExternalLauncher>());
+                await logsPage.RefreshAsync();
                 var navigation = new NavigationRegistryBuilder(localization)
                     .Add(PageKey.Home, "Nav.Home", PackIconCodiconsKind.Home, home)
                     .Add(PageKey.Logs, "Logs.Title", PackIconCodiconsKind.Output, logsPage)
@@ -101,6 +104,8 @@ public partial class App : Application
                         NavigationPlacement.Footer)
                     .StartAt(PageKey.Home)
                     .Build();
+                
+                
                 var main = new MainViewModel(localization, settings, navigation);
                 var window = new MainWindow { DataContext = main };
                 var lifetime = new CancellationTokenSource();

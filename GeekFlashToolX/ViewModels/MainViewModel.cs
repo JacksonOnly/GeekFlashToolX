@@ -71,10 +71,8 @@ public sealed class MainViewModel : ViewModelBase
         if (_disposed || !_navigation.TryGet(key, out var destination)) return;
         if (!ReferenceEquals(CurrentPage, destination.Page))
         {
-            if (CurrentPage is LogsViewModel previousLogs) previousLogs.SetActive(false);
             CurrentPage = destination.Page;
             _navigation.Select(destination);
-            if (CurrentPage is LogsViewModel currentLogs) currentLogs.SetActive(true);
         }
         if (IsCompact) IsSidebarExpanded = false;
     }

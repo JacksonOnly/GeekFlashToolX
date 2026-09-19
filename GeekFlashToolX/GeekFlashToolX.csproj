@@ -16,6 +16,10 @@
         <PublishAot>true</PublishAot>
         <SupportedOSPlatformVersion>5.1</SupportedOSPlatformVersion>
     </PropertyGroup>
+    
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <AvaloniaHotReloadEnableFileWatcher>true</AvaloniaHotReloadEnableFileWatcher>
+    </PropertyGroup>
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
@@ -30,6 +34,10 @@
         <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.2" />
         <PackageReference Include="IconPacks.Avalonia.Codicons" Version="2.0.0" />
         <PackageReference Include="ReactiveUI.Avalonia" Version="12.1.2" />
+        <PackageReference Include="AvaloniaUI.DiagnosticsSupport.HotReload" Version="1.0.0" >
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+        </PackageReference>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>

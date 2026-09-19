@@ -3,7 +3,7 @@
         <ControlTheme
             BasedOn="{StaticResource {x:Type ComboBox}}"
             TargetType="ComboBox"
-            x:Key="SettingsComboBox">
+            x:Key="AppComboBox">
             <Setter Property="Template">
                 <ControlTemplate>
                     <DataValidationErrors>
@@ -117,8 +117,10 @@
         <Setter Property="Padding" Value="16,8" />
         <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
         <Setter Property="RenderTransform" Value="scale(1)" />
         <Setter Property="Transitions">
             <Transitions>
@@ -135,12 +137,14 @@
     </Style>
     <Style Selector="Button.primary">
         <Setter Property="Background" Value="{DynamicResource AccentButtonBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource TextOnAccentBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
     <Style Selector="Button.nav">
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
         <Setter Property="MinHeight" Value="46" />
         <Setter Property="Padding" Value="14,10" />
@@ -254,6 +258,19 @@
         <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource TextOnAccentBrush}" />
     </Style>
+    <Style Selector="Button:not(.primary):not(.nav):not(.title-button):pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentMutedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentTextBrush}" />
+    </Style>
+    <Style Selector="Button:not(.primary):not(.nav):not(.title-button):pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentTextBrush}" />
+    </Style>
+    <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TextMutedBrush}" />
+    </Style>
     <Style Selector="Button:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="BorderBrush" Value="{DynamicResource AccentTextBrush}" />
         <Setter Property="BorderThickness" Value="2" />
@@ -265,6 +282,7 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
@@ -284,8 +302,9 @@
     <Style Selector="Window.maximized PathIcon.maximize-glyph">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="ComboBox.settings-select">
-        <Setter Property="Theme" Value="{StaticResource SettingsComboBox}" />
+    <!-- Shared defaults: settings and feature pages use the same input controls. -->
+    <Style Selector="ComboBox">
+        <Setter Property="Theme" Value="{StaticResource AppComboBox}" />
         <Setter Property="MinHeight" Value="44" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Center" />
@@ -386,14 +405,14 @@
         <Setter Property="Fill" Value="{DynamicResource TextOnAccentBrush}" />
     </Style>
     <!--  Layout changes respond to the content width, including manual sidebar expansion.  -->
-    <Style Selector="StackPanel.page">
+    <Style Selector="StackPanel.page, Grid.page">
         <Setter Property="Margin" Value="{StaticResource PaddingPage}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
     </Style>
     <Style Selector="TextBlock.h1, TextBlock.h2, TextBlock.caption">
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
-    <Style Selector="Window.compact StackPanel.page">
+    <Style Selector="Window.compact StackPanel.page, Window.compact Grid.page">
         <Setter Property="Margin" Value="24" />
     </Style>
     <Style Selector="Window.compact Border.hero">
@@ -424,16 +443,32 @@
         <Setter Property="Height" Value="40" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
-    <Style Selector="TextBox.settings-path">
-        <Setter Property="Height" Value="42" />
-        <Setter Property="MinHeight" Value="42" />
-        <Setter Property="Padding" Value="12,0" />
+    <Style Selector="TextBox">
+        <Setter Property="MinHeight" Value="44" />
+        <Setter Property="Padding" Value="12,10" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
+    </Style>
+    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentTextBrush}" />
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentTextBrush}" />
+    </Style>
+    <Style Selector="TextBox.settings-path, TextBox.log-output">
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
         <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Microsoft YaHei UI, monospace" />
-        <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
+    </Style>
+    <Style Selector="TextBox.log-output">
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeXs}" />
+        <Setter Property="Padding" Value="12" />
     </Style>
     <Style Selector="Border.settings-file-panel">
         <Setter Property="Padding" Value="16" />

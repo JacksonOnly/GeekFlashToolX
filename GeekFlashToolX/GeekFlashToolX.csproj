@@ -18,16 +18,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**"/>
-        <Content Include="Langs\**\*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
+        <AvaloniaResource Include="Assets\**" />
+        <Content Include="Langs\**\*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="12.1.2" />
+        <PackageReference Include="Avalonia.Controls.TreeDataGrid" Version="12.3.1" />
         <PackageReference Include="Avalonia.Desktop" Version="12.1.2" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.2" />
         <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.2" />
-        <PackageReference Include="IconPacks.Avalonia.Codicons" Version="2.0.0"/>
+        <PackageReference Include="IconPacks.Avalonia.Codicons" Version="2.0.0" />
         <PackageReference Include="ReactiveUI.Avalonia" Version="12.1.2" />
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
@@ -38,7 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GeekFlashToolX.Core\GeekFlashToolX.Core.csproj"/>
-        <ProjectReference Include="..\GeekFlashToolX.Services\GeekFlashToolX.Services.csproj"/>
+        <ProjectReference Include="..\GeekFlashToolX.Core\GeekFlashToolX.Core.csproj" />
+        <ProjectReference Include="..\GeekFlashToolX.Services\GeekFlashToolX.Services.csproj" />
     </ItemGroup>
 </Project>

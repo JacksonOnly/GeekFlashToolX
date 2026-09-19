@@ -1,0 +1,75 @@
+<Window
+    Background="{DynamicResource SurfaceBackgroundBrush}"
+    Height="600"
+    MinHeight="320"
+    MinWidth="480"
+    Title="{Binding Title}"
+    Width="900"
+    WindowStartupLocation="CenterOwner"
+    x:Class="GeekFlashToolX.Views.LogPreviewWindow"
+    x:DataType="vm:LogPreviewViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:vm="using:GeekFlashToolX.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid
+        Margin="24"
+        RowDefinitions="Auto,*,Auto"
+        RowSpacing="{StaticResource Space4}">
+        <StackPanel Spacing="{StaticResource Space2}">
+            <TextBlock
+                Classes="h2"
+                Text="{Binding Title}"
+                TextTrimming="CharacterEllipsis" />
+            <TextBlock Classes="caption" Text="{I18 Logs.Preview}" />
+        </StackPanel>
+        <Border
+            Classes="settings-file-panel"
+            ClipToBounds="True"
+            Grid.Row="1"
+            Padding="16">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <SelectableTextBlock
+                    AutomationProperties.Name="{I18 Logs.Preview}"
+                    Classes="mono"
+                    Text="{Binding Content, Mode=OneWay}"
+                    TextWrapping="NoWrap"
+                    x:Name="LogPreview" />
+            </ScrollViewer>
+        </Border>
+        <Grid
+            ColumnDefinitions="*,Auto,Auto,Auto"
+            ColumnSpacing="{StaticResource Space2}"
+            Grid.Row="2">
+            <SelectableTextBlock
+                AutomationProperties.Name="{Binding FilePath}"
+                Classes="caption mono"
+                Text="{Binding FilePath}"
+                TextTrimming="CharacterEllipsis"
+                TextWrapping="NoWrap"
+                ToolTip.Tip="{Binding FilePath}"
+                VerticalAlignment="Center" />
+            <Button
+                Click="OnCopyPathClick"
+                Content="{I18 Logs.CopyPath}"
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                MinWidth="96" />
+            <Button
+                Classes="primary"
+                Click="OnOpenFileClick"
+                Content="{I18 Logs.OpenFile}"
+                Grid.Column="2"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                MinWidth="104" />
+            <Button
+                Click="OnCloseClick"
+                Content="{I18 Window.Close}"
+                Grid.Column="3"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                MinWidth="96" />
+        </Grid>
+    </Grid>
+</Window>

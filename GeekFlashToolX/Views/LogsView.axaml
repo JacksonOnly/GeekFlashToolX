@@ -1,0 +1,128 @@
+<UserControl
+    x:Class="GeekFlashToolX.Views.LogsView"
+    x:DataType="vm:LogsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+    xmlns:vm="using:GeekFlashToolX.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Classes="page logs-page" RowDefinitions="Auto,Auto,Auto,*,Auto">
+        <StackPanel Spacing="{StaticResource Space2}">
+            <TextBlock Classes="eyebrow mono" Text="{I18 Logs.Eyebrow}" />
+            <TextBlock Classes="h1" Text="{I18 Logs.Title}" />
+            <TextBlock Classes="body logs-subtitle" Text="{I18 Logs.Subtitle}" />
+        </StackPanel>
+        <Border Classes="settings-file-panel" Grid.Row="1">
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="{StaticResource Space3}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource Space4}">
+                    <TextBlock
+                        Classes="h2"
+                        Text="{I18 Logs.Filter}"
+                        VerticalAlignment="Center" />
+                    <StackPanel
+                        Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="{StaticResource Space2}">
+                        <Button
+                            AutomationProperties.Name="{I18 Logs.Folder}"
+                            Command="{Binding OpenFolderCommand}"
+                            x:Name="OpenLogsFolderButton">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <iconPacks:PackIconCodicons
+                                    Height="16"
+                                    Kind="FolderOpened"
+                                    Width="16" />
+                                <TextBlock Text="{I18 Logs.Folder}" />
+                            </StackPanel>
+                        </Button>
+                        <Button
+                            AutomationProperties.Name="{I18 Logs.Refresh}"
+                            Classes="primary"
+                            Command="{Binding RefreshCommand}"
+                            IsEnabled="{Binding !IsBusy}"
+                            x:Name="RefreshLogsButton">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <iconPacks:PackIconCodicons
+                                    Height="16"
+                                    Kind="Refresh"
+                                    Width="16" />
+                                <TextBlock Text="{I18 Logs.Refresh}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+                <Grid
+                    ColumnDefinitions="*,150,150"
+                    ColumnSpacing="{StaticResource Space3}"
+                    Grid.Row="1">
+                    <TextBox
+                        AutomationProperties.Name="{I18 Logs.Search}"
+                        PlaceholderText="{I18 Logs.Search}"
+                        Text="{Binding Search}"
+                        x:Name="LogSearch" />
+                    <ComboBox
+                        AutomationProperties.Name="{I18 Logs.Status}"
+                        Grid.Column="1"
+                        ItemsSource="{Binding StatusOptions}"
+                        SelectedItem="{Binding SelectedStatus}"
+                        x:Name="LogStatusFilter">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LogFilterOption">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <ComboBox
+                        AutomationProperties.Name="{I18 Logs.Period}"
+                        Grid.Column="2"
+                        ItemsSource="{Binding PeriodOptions}"
+                        SelectedItem="{Binding SelectedPeriod}"
+                        x:Name="LogPeriodFilter">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LogPeriodOption">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+            </Grid>
+        </Border>
+        <TextBlock
+            Foreground="{DynamicResource DangerBrush}"
+            Grid.Row="2"
+            IsVisible="{Binding HasError}"
+            Text="{Binding Error}"
+            TextWrapping="Wrap" />
+        <Border
+            Classes="card"
+            ClipToBounds="True"
+            Grid.Row="3"
+            MinHeight="96"
+            Padding="0">
+            <Panel>
+                <TreeDataGrid
+                    AutomationProperties.Name="{I18 Logs.Title}"
+                    Source="{Binding Source}"
+                    x:Name="WorkLogGrid" />
+                <TextBlock
+                    Classes="caption"
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding IsEmpty}"
+                    Text="{I18 Logs.Empty}"
+                    VerticalAlignment="Center" />
+            </Panel>
+        </Border>
+        <Grid
+            ColumnDefinitions="Auto,*"
+            ColumnSpacing="{StaticResource Space4}"
+            Grid.Row="4">
+            <TextBlock Classes="caption" Text="{Binding CountLabel}" />
+            <TextBlock
+                Classes="caption"
+                Grid.Column="1"
+                Text="{Binding LogDirectory}"
+                TextTrimming="CharacterEllipsis"
+                TextWrapping="NoWrap"
+                ToolTip.Tip="{Binding LogDirectory}" />
+        </Grid>
+    </Grid>
+</UserControl>

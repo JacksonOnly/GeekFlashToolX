@@ -1,0 +1,67 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:notifications="using:Avalonia.Controls.Notifications">
+    <Style Selector="Grid.logs-page">
+        <Setter Property="RowSpacing" Value="{StaticResource Space4}" />
+    </Style>
+    <Style Selector="Window.compact Grid.logs-page">
+        <Setter Property="Margin" Value="24,16" />
+        <Setter Property="RowSpacing" Value="{StaticResource Space2}" />
+    </Style>
+    <Style Selector="Window.compact TextBlock.logs-subtitle">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="notifications|NotificationCard">
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource RadiusLg}" />
+    </Style>
+    <Style Selector="notifications|NotificationCard:information /template/ Panel#PART_HeaderBar">
+        <Setter Property="Background" Value="{DynamicResource AccentButtonBrush}" />
+    </Style>
+    <Style Selector="notifications|NotificationCard:success /template/ Panel#PART_HeaderBar">
+        <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
+    </Style>
+    <Style Selector="notifications|NotificationCard:error /template/ Panel#PART_HeaderBar">
+        <Setter Property="Background" Value="{DynamicResource DangerBrush}" />
+    </Style>
+    <Style Selector="TreeDataGrid">
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TreeDataGridColumnHeader">
+        <Setter Property="MinHeight" Value="44" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+    <Style Selector="TreeDataGridColumnHeader:pointerover /template/ Border#DataGridBorder, TreeDataGridColumnHeader:pressed /template/ Border#DataGridBorder">
+        <Setter Property="Background" Value="{DynamicResource AccentMutedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentTextBrush}" />
+    </Style>
+    <Style Selector="TreeDataGridRow">
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+    <Style Selector="TreeDataGridRow:pointerover /template/ Border#RowBorder">
+        <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    </Style>
+    <Style Selector="TreeDataGridRow:selected /template/ Border#RowBorder, TreeDataGridRow:selected:pointerover /template/ Border#RowBorder">
+        <Setter Property="Background" Value="{DynamicResource AccentMutedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentTextBrush}" />
+    </Style>
+    <Style Selector="TreeDataGridTextCell">
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
+    </Style>
+</Styles>

@@ -14,9 +14,14 @@ public abstract class ViewModelBase : ReactiveObject, IDisposable
         if (_localization is not null) _localization.CultureChanged += OnCultureChanged;
     }
 
-    protected string Text(string key)
+    protected string String(string key)
     {
-        return _localization?[key] ?? key;
+        return _localization?.String(key) ?? key;
+    }
+
+    protected string FormatString(string key, params object?[] arguments)
+    {
+        return _localization?.FormatString(key, arguments) ?? key;
     }
 
     protected virtual void OnLanguageChanged()

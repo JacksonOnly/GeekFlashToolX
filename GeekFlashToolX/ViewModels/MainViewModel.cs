@@ -11,9 +11,9 @@ namespace GeekFlashToolX.ViewModels;
 public sealed class MainViewModel : ViewModelBase
 {
     private readonly IAppSettingsService _settingsService;
-    private readonly HomeViewModel _home;
-    private readonly OtherViewModel _other;
+    private readonly NavigationRegistry _navigation;
     private readonly SettingsViewModel _settings;
+    private bool _disposed;
     private readonly IPageTransition _animatedPageTransition = new CrossFade(TimeSpan.FromMilliseconds(220));
     private readonly IPageTransition _instantPageTransition = new InstantPageTransition();
     private ViewModelBase _currentPage;
@@ -22,35 +22,20 @@ public sealed class MainViewModel : ViewModelBase
     public MainViewModel(
         ILocalizationService localization,
         IAppSettingsService settingsService,
-        HomeViewModel home,
-        OtherViewModel other,
-        SettingsViewModel settings) : base(localization)
+        NavigationRegistry navigation) : base(localization)
     {
         _settingsService = settingsService;
-        _home = home;
-        _other = other;
-        _settings = settings;
-        _currentPage = home;
-
-        NavigateHomeCommand = ReactiveCommand.Create(() => NavigateTo(_home));
-        NavigateOtherCommand = ReactiveCommand.Create(() => NavigateTo(_other));
-        NavigateSettingsCommand = ReactiveCommand.Create(() => NavigateTo(_settings));
+        _navigation = navigation;
+        _settings = navigation.Page<SettingsViewModel>();
+        _currentPage = navigation.Initial.Page;
+        NavigateToCommand = ReactiveCommand.Create<PageKey>(NavigateTo);
         ToggleSidebarCommand = ReactiveCommand.Create(() => IsSidebarExpanded = !IsSidebarExpanded);
 
-        settings.PropertyChanged += OnSettingsPropertyChanged;
+        _settings.PropertyChanged += OnSettingsPropertyChanged;
     }
 
-    public string AppName => Text("App.Name");
-    public string AppTagline => Text("App.Tagline");
-    public string HomeLabel => Text("Nav.Home");
-    public string OtherLabel => Text("Nav.Other");
-    public string SettingsLabel => Text("Nav.Settings");
-    public string ReadyLabel => Text("Footer.Ready");
     public string AppVersion => $"v{Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "0.0.0"}";
-    public string ToggleSidebarLabel => Text(IsSidebarExpanded ? "Window.CollapseSidebar" : "Window.ExpandSidebar");
-    public string MinimizeLabel => Text("Window.Minimize");
-    public string MaximizeLabel => Text("Window.MaximizeRestore");
-    public string CloseLabel => Text("Window.Close");
+    public string ToggleSidebarLabel => String(IsSidebarExpanded ? "Window.CollapseSidebar" : "Window.ExpandSidebar");
     public bool IsCompact { get; set; }
 
     public bool IsSidebarExpanded
@@ -66,33 +51,43 @@ public sealed class MainViewModel : ViewModelBase
     public ViewModelBase CurrentPage
     {
         get => _currentPage;
-        private set
-        {
-            this.RaiseAndSetIfChanged(ref _currentPage, value);
-            this.RaisePropertyChanged(nameof(IsHomeActive));
-            this.RaisePropertyChanged(nameof(IsOtherActive));
-            this.RaisePropertyChanged(nameof(IsSettingsActive));
-        }
+        private set => this.RaiseAndSetIfChanged(ref _currentPage, value);
     }
 
-    public bool IsHomeActive => ReferenceEquals(CurrentPage, _home);
-    public bool IsOtherActive => ReferenceEquals(CurrentPage, _other);
-    public bool IsSettingsActive => ReferenceEquals(CurrentPage, _settings);
+    public IReadOnlyList<NavigationItem> NavigationItems => _navigation.Items;
+    public IReadOnlyList<NavigationItem> PrimaryNavigationItems => _navigation.PrimaryItems;
+    public IReadOnlyList<NavigationItem> FooterNavigationItems => _navigation.FooterItems;
     public bool AnimationsDisabled => !_settingsService.Current.AnimationsEnabled;
 
     public IPageTransition PageTransition => _settingsService.Current.AnimationsEnabled
         ? _animatedPageTransition
         : _instantPageTransition;
 
-    public ICommand NavigateHomeCommand { get; }
-    public ICommand NavigateOtherCommand { get; }
-    public ICommand NavigateSettingsCommand { get; }
+    public ICommand NavigateToCommand { get; }
     public ICommand ToggleSidebarCommand { get; }
 
-    private void NavigateTo(ViewModelBase page)
+    private void NavigateTo(PageKey key)
     {
-        CurrentPage = page;
+        if (_disposed || !_navigation.TryGet(key, out var destination)) return;
+        if (!ReferenceEquals(CurrentPage, destination.Page))
+        {
+            if (CurrentPage is LogsViewModel previousLogs) previousLogs.SetActive(false);
+            CurrentPage = destination.Page;
+            _navigation.Select(destination);
+            if (CurrentPage is LogsViewModel currentLogs) currentLogs.SetActive(true);
+        }
         if (IsCompact) IsSidebarExpanded = false;
+    }
+
+    public override void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        _settings.PropertyChanged -= OnSettingsPropertyChanged;
+        (NavigateToCommand as IDisposable)?.Dispose();
+        (ToggleSidebarCommand as IDisposable)?.Dispose();
+        _navigation.Dispose();
+        base.Dispose();
     }
 
     private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs args)

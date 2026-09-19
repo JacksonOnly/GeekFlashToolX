@@ -9,10 +9,10 @@ public sealed class AppSettingsService : IAppSettingsService
 {
     private readonly SemaphoreSlim _fileLock = new(1, 1);
 
-    public AppSettingsService()
+    public AppSettingsService(string? settingsFilePath = null)
     {
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        SettingsFilePath = Path.Combine(appData, "GeekFlashTool-X", "settings.json");
+        SettingsFilePath = settingsFilePath ?? Path.Combine(appData, "GeekFlashTool-X", "settings.json");
     }
 
     public AppSettings Current { get; private set; } = new();

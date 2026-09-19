@@ -16,6 +16,26 @@
     xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
     xmlns:vm="using:GeekFlashToolX.ViewModels"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <DataTemplate x:DataType="vm:NavigationItem" x:Key="NavigationTemplate">
+            <Button
+                AutomationProperties.Name="{Binding Title}"
+                Classes="nav"
+                Classes.active="{Binding IsSelected}"
+                Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).NavigateToCommand}"
+                CommandParameter="{Binding Key}"
+                HorizontalAlignment="Stretch"
+                ToolTip.Tip="{Binding Title}">
+                <Grid ColumnDefinitions="20,*" ColumnSpacing="14">
+                    <iconPacks:PackIconCodicons Kind="{Binding Icon}" />
+                    <TextBlock
+                        Classes="nav-label"
+                        Grid.Column="1"
+                        Text="{Binding Title}" />
+                </Grid>
+            </Button>
+        </DataTemplate>
+    </Window.Resources>
     <Grid RowDefinitions="48,*">
         <Border
             Background="{DynamicResource SidebarBrush}"
@@ -43,7 +63,7 @@
                     <TextBlock
                         Classes="brand"
                         IsHitTestVisible="False"
-                        Text="{Binding AppName}"
+                        Text="{I18 App.Name}"
                         VerticalAlignment="Center" />
                 </Border>
                 <StackPanel
@@ -52,10 +72,10 @@
                     Orientation="Horizontal"
                     Spacing="4">
                     <Button
-                        AutomationProperties.Name="{Binding MinimizeLabel}"
+                        AutomationProperties.Name="{I18 Window.Minimize}"
                         Classes="title-button"
                         Click="OnMinimize"
-                        ToolTip.Tip="{Binding MinimizeLabel}"
+                        ToolTip.Tip="{I18 Window.Minimize}"
                         x:Name="MinimizeButton">
                         <PathIcon
                             Data="M 0,6 L 12,6 12,7 0,7 Z"
@@ -63,10 +83,10 @@
                             Width="12" />
                     </Button>
                     <Button
-                        AutomationProperties.Name="{Binding MaximizeLabel}"
+                        AutomationProperties.Name="{I18 Window.MaximizeRestore}"
                         Classes="title-button"
                         Click="OnMaximize"
-                        ToolTip.Tip="{Binding MaximizeLabel}"
+                        ToolTip.Tip="{I18 Window.MaximizeRestore}"
                         x:Name="MaximizeButton">
                         <Panel Height="12" Width="12">
                             <PathIcon
@@ -82,10 +102,10 @@
                         </Panel>
                     </Button>
                     <Button
-                        AutomationProperties.Name="{Binding CloseLabel}"
+                        AutomationProperties.Name="{I18 Window.Close}"
                         Classes="title-button close"
                         Click="OnClose"
-                        ToolTip.Tip="{Binding CloseLabel}"
+                        ToolTip.Tip="{I18 Window.Close}"
                         x:Name="CloseButton">
                         <PathIcon
                             Data="M 1,0 L 6,5 11,0 12,1 7,6 12,11 11,12 6,7 1,12 0,11 5,6 0,1 Z"
@@ -110,77 +130,36 @@
                     x:Name="Sidebar">
                     <Grid Margin="12,20,12,16" RowDefinitions="Auto,*,Auto">
                         <Grid ColumnDefinitions="48,*" Margin="0,0,0,28">
-                            <Border
-                                Background="{DynamicResource AccentMutedBrush}"
-                                CornerRadius="12"
+                            <Image
                                 Height="44"
-                                Width="44">
-                                <Image
-                                    Height="38"
-                                    Source="/Assets/logo.png"
-                                    Stretch="Uniform"
-                                    Width="38" />
-                            </Border>
+                                Source="/Assets/logo.png"
+                                Stretch="Uniform"
+                                Width="44" />
                             <StackPanel
                                 Classes="nav-label"
                                 Grid.Column="1"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center">
-                                <TextBlock Classes="brand" Text="{Binding AppName}" />
-                                <TextBlock Classes="caption" Text="{Binding AppTagline}" />
+                                <TextBlock Classes="brand" Text="{I18 App.Name}" />
+                                <TextBlock Classes="caption" Text="{I18 App.Tagline}" />
                             </StackPanel>
                         </Grid>
-                        <StackPanel Grid.Row="1" Spacing="8">
-                            <Button
-                                AutomationProperties.Name="{Binding HomeLabel}"
-                                Classes="nav"
-                                Classes.active="{Binding IsHomeActive}"
-                                Command="{Binding NavigateHomeCommand}"
-                                ToolTip.Tip="{Binding HomeLabel}"
-                                x:Name="HomeNavigation">
-                                <Grid ColumnDefinitions="20,*" ColumnSpacing="14">
-                                    <iconPacks:PackIconCodicons Kind="Home" />
-                                    <TextBlock
-                                        Classes="nav-label"
-                                        Grid.Column="1"
-                                        Text="{Binding HomeLabel}"
-                                        VerticalAlignment="Center" />
-                                </Grid>
-                            </Button>
-                            <Button
-                                AutomationProperties.Name="{Binding OtherLabel}"
-                                Classes="nav"
-                                Classes.active="{Binding IsOtherActive}"
-                                Command="{Binding NavigateOtherCommand}"
-                                ToolTip.Tip="{Binding OtherLabel}"
-                                x:Name="OtherNavigation">
-                                <Grid ColumnDefinitions="20,*" ColumnSpacing="14">
-                                    <iconPacks:PackIconCodicons Kind="Extensions" />
-                                    <TextBlock
-                                        Classes="nav-label"
-                                        Grid.Column="1"
-                                        Text="{Binding OtherLabel}"
-                                        VerticalAlignment="Center" />
-                                </Grid>
-                            </Button>
-                        </StackPanel>
-                        <Button
-                            AutomationProperties.Name="{Binding SettingsLabel}"
-                            Classes="nav"
-                            Classes.active="{Binding IsSettingsActive}"
-                            Command="{Binding NavigateSettingsCommand}"
+                        <ItemsControl
+                            Grid.Row="1"
+                            ItemTemplate="{StaticResource NavigationTemplate}"
+                            ItemsSource="{Binding PrimaryNavigationItems}"
+                            x:Name="PrimaryNavigation">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                        <ItemsControl
                             Grid.Row="2"
-                            ToolTip.Tip="{Binding SettingsLabel}"
-                            x:Name="SettingsNavigation">
-                            <Grid ColumnDefinitions="20,*" ColumnSpacing="14">
-                                <iconPacks:PackIconCodicons Kind="SettingsGear" />
-                                <TextBlock
-                                    Classes="nav-label"
-                                    Grid.Column="1"
-                                    Text="{Binding SettingsLabel}"
-                                    VerticalAlignment="Center" />
-                            </Grid>
-                        </Button>
+                            ItemTemplate="{StaticResource NavigationTemplate}"
+                            ItemsSource="{Binding FooterNavigationItems}"
+                            x:Name="FooterNavigation" />
                     </Grid>
                 </Border>
             </SplitView.Pane>
@@ -199,7 +178,7 @@
                                 Fill="{DynamicResource SuccessBrush}"
                                 Height="6"
                                 Width="6" />
-                            <TextBlock Classes="caption" Text="{Binding ReadyLabel}" />
+                            <TextBlock Classes="caption" Text="{I18 Footer.Ready}" />
                         </StackPanel>
                         <TextBlock
                             Classes="caption mono"

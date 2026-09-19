@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using GeekFlashToolX.Core.Models;
 using GeekFlashToolX.Core.Services;
 using ReactiveUI;
+using System.Windows.Input;
 
 namespace GeekFlashToolX.ViewModels;
 
@@ -14,11 +15,14 @@ public sealed class SettingsViewModel : ViewModelBase
     private LanguageOption? _selectedLanguage;
     private AccentOption? _selectedAccent;
     private bool _animationsEnabled;
+    private bool _autoCheckUpdates;
+    private bool _isCheckingUpdates;
 
     public SettingsViewModel(
         IAppSettingsService settingsService,
         ILocalizationService localization,
-        IAppearanceService appearanceService) : base(localization)
+        IAppearanceService appearanceService,
+        IUpdateCoordinator updateCoordinator) : base(localization)
     {
         _settingsService = settingsService;
         _localization = localization;
@@ -35,21 +39,40 @@ public sealed class SettingsViewModel : ViewModelBase
         _selectedAccent = AccentOptions.FirstOrDefault(item => item.Hex == settingsService.Current.AccentColor) ??
                           AccentOptions[0];
         _animationsEnabled = settingsService.Current.AnimationsEnabled;
+        _autoCheckUpdates = settingsService.Current.AutoCheckUpdates;
+        CheckUpdatesCommand = ReactiveCommand.CreateFromTask(async () =>
+        {
+            IsCheckingUpdates = true;
+            try { await updateCoordinator.CheckAndNotifyAsync(); }
+            finally { IsCheckingUpdates = false; }
+        });
     }
 
-    public string Eyebrow => Text("Settings.Eyebrow");
-    public string Title => Text("Settings.Title");
-    public string Subtitle => Text("Settings.Subtitle");
-    public string AppearanceTitle => Text("Settings.AppearanceTitle");
-    public string AppearanceBody => Text("Settings.AppearanceBody");
-    public string ThemeLabel => Text("Settings.Theme");
-    public string LanguageLabel => Text("Settings.Language");
-    public string AccentLabel => Text("Settings.Accent");
-    public string AnimationTitle => Text("Settings.AnimationTitle");
-    public string AnimationBody => Text("Settings.AnimationBody");
-    public string SettingsPathLabel => Text("Settings.Path");
-    public string CopySettingsPathLabel => Text("Settings.CopyPath");
     public string SettingsPath => _settingsService.SettingsFilePath;
+    public string CheckUpdatesLabel => String(IsCheckingUpdates ? "Update.Checking" : "Update.CheckTitle");
+    public ICommand CheckUpdatesCommand { get; }
+
+    public bool IsCheckingUpdates
+    {
+        get => _isCheckingUpdates;
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _isCheckingUpdates, value);
+            this.RaisePropertyChanged(nameof(CheckUpdatesLabel));
+        }
+    }
+
+    public bool AutoCheckUpdates
+    {
+        get => _autoCheckUpdates;
+        set
+        {
+            if (_autoCheckUpdates == value) return;
+            this.RaiseAndSetIfChanged(ref _autoCheckUpdates, value);
+            _settingsService.Current.AutoCheckUpdates = value;
+            _ = SaveSafelyAsync();
+        }
+    }
 
     public ObservableCollection<ThemeOption> ThemeOptions { get; }
     public ObservableCollection<LanguageOption> Languages { get; }
@@ -120,9 +143,9 @@ public sealed class SettingsViewModel : ViewModelBase
     {
         var selectedHex = _selectedAccent?.Hex ?? _settingsService.Current.AccentColor;
         AccentOptions.Clear();
-        AccentOptions.Add(new AccentOption("#2F81F7", Text("Accent.Blue")));
-        AccentOptions.Add(new AccentOption("#06B6D4", Text("Accent.Cyan")));
-        AccentOptions.Add(new AccentOption("#8B5CF6", Text("Accent.Violet")));
+        AccentOptions.Add(new AccentOption("#2F81F7", String("Accent.Blue")));
+        AccentOptions.Add(new AccentOption("#06B6D4", String("Accent.Cyan")));
+        AccentOptions.Add(new AccentOption("#8B5CF6", String("Accent.Violet")));
         _selectedAccent = AccentOptions.FirstOrDefault(item => item.Hex == selectedHex) ?? AccentOptions[0];
         this.RaisePropertyChanged(nameof(SelectedAccent));
     }
@@ -131,9 +154,9 @@ public sealed class SettingsViewModel : ViewModelBase
     {
         var selectedValue = _selectedTheme?.Value ?? _settingsService.Current.Theme;
         ThemeOptions.Clear();
-        ThemeOptions.Add(new ThemeOption(ThemeMode.System, Text("Theme.System")));
-        ThemeOptions.Add(new ThemeOption(ThemeMode.Light, Text("Theme.Light")));
-        ThemeOptions.Add(new ThemeOption(ThemeMode.Dark, Text("Theme.Dark")));
+        ThemeOptions.Add(new ThemeOption(ThemeMode.System, String("Theme.System")));
+        ThemeOptions.Add(new ThemeOption(ThemeMode.Light, String("Theme.Light")));
+        ThemeOptions.Add(new ThemeOption(ThemeMode.Dark, String("Theme.Dark")));
         _selectedTheme = ThemeOptions.First(item => item.Value == selectedValue);
         this.RaisePropertyChanged(nameof(SelectedTheme));
     }

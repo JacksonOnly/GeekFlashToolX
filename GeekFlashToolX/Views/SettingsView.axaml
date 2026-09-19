@@ -12,26 +12,26 @@
             MaxWidth="920"
             Spacing="{StaticResource Space6}">
             <StackPanel Spacing="{StaticResource Space2}">
-                <TextBlock Classes="eyebrow mono" Text="{Binding Eyebrow}" />
-                <TextBlock Classes="h1" Text="{Binding Title}" />
+                <TextBlock Classes="eyebrow mono" Text="{I18 Settings.Eyebrow}" />
+                <TextBlock Classes="h1" Text="{I18 Settings.Title}" />
                 <TextBlock
                     Classes="body"
                     HorizontalAlignment="Left"
                     MaxWidth="720"
-                    Text="{Binding Subtitle}" />
+                    Text="{I18 Settings.Subtitle}" />
             </StackPanel>
 
             <Border Classes="card">
                 <StackPanel Spacing="{StaticResource Space4}">
                     <StackPanel Spacing="{StaticResource Space1}">
-                        <TextBlock Classes="h2" Text="{Binding AppearanceTitle}" />
-                        <TextBlock Classes="caption" Text="{Binding AppearanceBody}" />
+                        <TextBlock Classes="h2" Text="{I18 Settings.AppearanceTitle}" />
+                        <TextBlock Classes="caption" Text="{I18 Settings.AppearanceBody}" />
                     </StackPanel>
                     <Border Classes="setting-row">
                         <Grid ColumnDefinitions="*,240" ColumnSpacing="24">
-                            <TextBlock Text="{Binding ThemeLabel}" VerticalAlignment="Center" />
+                            <TextBlock Text="{I18 Settings.Theme}" VerticalAlignment="Center" />
                             <ComboBox
-                                AutomationProperties.Name="{Binding ThemeLabel}"
+                                AutomationProperties.Name="{I18 Settings.Theme}"
                                 Classes="settings-select"
                                 Grid.Column="1"
                                 ItemsSource="{Binding ThemeOptions}"
@@ -47,9 +47,9 @@
                     </Border>
                     <Border Classes="setting-row">
                         <Grid ColumnDefinitions="*,240" ColumnSpacing="24">
-                            <TextBlock Text="{Binding LanguageLabel}" VerticalAlignment="Center" />
+                            <TextBlock Text="{I18 Settings.Language}" VerticalAlignment="Center" />
                             <ComboBox
-                                AutomationProperties.Name="{Binding LanguageLabel}"
+                                AutomationProperties.Name="{I18 Settings.Language}"
                                 Classes="settings-select"
                                 Grid.Column="1"
                                 ItemsSource="{Binding Languages}"
@@ -65,9 +65,9 @@
                     </Border>
                     <Border Classes="setting-row">
                         <Grid ColumnDefinitions="*,240" ColumnSpacing="24">
-                            <TextBlock Text="{Binding AccentLabel}" VerticalAlignment="Center" />
+                            <TextBlock Text="{I18 Settings.Accent}" VerticalAlignment="Center" />
                             <ComboBox
-                                AutomationProperties.Name="{Binding AccentLabel}"
+                                AutomationProperties.Name="{I18 Settings.Accent}"
                                 Classes="settings-select"
                                 Grid.Column="1"
                                 ItemsSource="{Binding AccentOptions}"
@@ -96,14 +96,14 @@
             <Border Classes="card">
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Margin="0,0,24,0" Spacing="{StaticResource Space1}">
-                        <TextBlock Classes="h2" Text="{Binding AnimationTitle}" />
+                        <TextBlock Classes="h2" Text="{I18 Settings.AnimationTitle}" />
                         <TextBlock
                             Classes="caption"
-                            Text="{Binding AnimationBody}"
+                            Text="{I18 Settings.AnimationBody}"
                             TextWrapping="Wrap" />
                     </StackPanel>
                     <ToggleSwitch
-                        AutomationProperties.Name="{Binding AnimationTitle}"
+                        AutomationProperties.Name="{I18 Settings.AnimationTitle}"
                         Grid.Column="1"
                         IsChecked="{Binding AnimationsEnabled}"
                         OffContent=""
@@ -113,23 +113,52 @@
                 </Grid>
             </Border>
 
+            <Border Classes="card">
+                <StackPanel Spacing="16">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="h2" Text="{I18 Settings.UpdateTitle}" />
+                            <TextBlock
+                                Classes="caption"
+                                Text="{I18 Settings.UpdateBody}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch
+                            AutomationProperties.Name="{I18 Settings.UpdateTitle}"
+                            Grid.Column="1"
+                            IsChecked="{Binding AutoCheckUpdates}"
+                            OffContent=""
+                            OnContent=""
+                            VerticalAlignment="Center"
+                            x:Name="AutoUpdateSwitch" />
+                    </Grid>
+                    <Button
+                        Classes="primary"
+                        Command="{Binding CheckUpdatesCommand}"
+                        Content="{Binding CheckUpdatesLabel}"
+                        HorizontalAlignment="Left"
+                        IsEnabled="{Binding !IsCheckingUpdates}"
+                        x:Name="CheckUpdatesButton" />
+                </StackPanel>
+            </Border>
+
             <Border Classes="settings-file-panel">
                 <StackPanel Spacing="{StaticResource Space2}">
-                    <TextBlock Classes="caption" Text="{Binding SettingsPathLabel}" />
+                    <TextBlock Classes="caption" Text="{I18 Settings.Path}" />
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <TextBox
-                            AutomationProperties.Name="{Binding SettingsPathLabel}"
+                            AutomationProperties.Name="{I18 Settings.Path}"
                             Classes="settings-path"
                             IsReadOnly="True"
                             Text="{Binding SettingsPath}"
                             TextWrapping="NoWrap"
                             x:Name="SettingsPathBox" />
                         <Button
-                            AutomationProperties.Name="{Binding CopySettingsPathLabel}"
+                            AutomationProperties.Name="{I18 Settings.CopyPath}"
                             Classes="icon-button"
                             Click="OnCopySettingsPath"
                             Grid.Column="1"
-                            ToolTip.Tip="{Binding CopySettingsPathLabel}">
+                            ToolTip.Tip="{I18 Settings.CopyPath}">
                             <iconPacks:PackIconCodicons
                                 Height="18"
                                 Kind="Copy"

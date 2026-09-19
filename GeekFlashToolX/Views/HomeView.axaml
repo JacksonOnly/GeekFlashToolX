@@ -1,95 +1,115 @@
-<UserControl
-    x:Class="GeekFlashToolX.Views.HomeView"
-    x:DataType="vm:HomeViewModel"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
-    xmlns:vm="using:GeekFlashToolX.ViewModels"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <StackPanel
-            Classes="page"
-            MaxWidth="1180"
-            Spacing="{StaticResource Space6}">
-            <StackPanel Spacing="{StaticResource Space2}">
-                <TextBlock Classes="eyebrow mono" Text="{Binding Eyebrow}" />
-                <TextBlock Classes="h1" Text="{Binding Title}" />
-                <TextBlock
-                    Classes="body"
-                    HorizontalAlignment="Left"
-                    MaxWidth="760"
-                    Text="{Binding Subtitle}" />
-            </StackPanel>
-
+<UserControl x:Class="GeekFlashToolX.Views.HomeView"
+             x:DataType="vm:HomeViewModel"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GeekFlashToolX.ViewModels"
+             xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia">
+    <UserControl.Styles>
+        <Style Selector="UniformGrid.link-groups">
+            <Setter Property="Columns" Value="3" />
+        </Style>
+        <Style Selector="UserControl.narrow UniformGrid.link-groups">
+            <Setter Property="Columns" Value="1" />
+        </Style>
+        <Style Selector="Window.compact UniformGrid.link-groups">
+            <Setter Property="Columns" Value="1" />
+        </Style>
+        <Style Selector="UserControl.narrow Border.welcome-art">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="Button.resource-link">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="MinHeight" Value="64" />
+        </Style>
+    </UserControl.Styles>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Classes="page" MaxWidth="1240" Spacing="24">
             <Border Classes="hero">
-                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
-                    <StackPanel Spacing="{StaticResource Space3}">
-                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space2}">
-                            <Ellipse
-                                Fill="{DynamicResource SuccessBrush}"
-                                Height="9"
-                                Width="9" />
-                            <TextBlock Classes="caption mono" Text="CORE ONLINE" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="32">
+                    <StackPanel Spacing="16">
+                        <TextBlock Classes="eyebrow mono" Text="{I18 Home.Eyebrow}" />
+                        <TextBlock Classes="h1" Text="{I18 Home.Title}" />
+                        <TextBlock Classes="body" Text="{I18 Home.Subtitle}" TextWrapping="Wrap" MaxWidth="680" HorizontalAlignment="Left" />
+                        <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,4,0,0">
+                            <Button Classes="primary" Command="{Binding OpenLinkCommand}" CommandParameter="{Binding RepositoryUrl}"
+                                    AutomationProperties.Name="{I18 Home.Project}" x:Name="OpenProjectButton">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <iconPacks:PackIconCodicons Kind="Github" />
+                                    <TextBlock Text="{I18 Home.Project}" />
+                                    <iconPacks:PackIconCodicons Kind="LinkExternal" Width="14" Height="14" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Classes="caption mono" Text="{Binding CurrentVersion}" VerticalAlignment="Center" />
                         </StackPanel>
-                        <TextBlock Classes="display" Text="Geek Flash X" />
-                        <TextBlock Classes="body" Text="{Binding WorkspaceBody}" />
                     </StackPanel>
-                    <Border
-                        Background="{DynamicResource AccentMutedBrush}"
-                        Classes="hero-art"
-                        CornerRadius="56"
-                        Grid.Column="1"
-                        Height="112"
-                        Margin="32,0,0,0"
-                        Width="112">
-                        <iconPacks:PackIconCodicons
-                            Foreground="{DynamicResource AccentBrush}"
-                            Height="48"
-                            HorizontalAlignment="Center"
-                            Kind="Pulse"
-                            VerticalAlignment="Center"
-                            Width="48" />
+                    <Border Grid.Column="1" Classes="welcome-art" Background="{DynamicResource AccentMutedBrush}"
+                            Width="128" Height="128" CornerRadius="32" VerticalAlignment="Center">
+                        <Image Source="/Assets/logo.png" Width="100" Height="100" Stretch="Uniform" />
                     </Border>
-                    <Button
-                        Classes="primary"
-                        Command="{Binding OpenDialogCommand}"
-                        Content="{Binding Action}"
-                        Grid.Row="1"
-                        HorizontalAlignment="Left"
-                        Margin="0,24,0,0" />
                 </Grid>
             </Border>
-
-            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="{StaticResource Space4}">
-                <Border Classes="card" Grid.Column="0">
-                    <StackPanel Spacing="{StaticResource Space2}">
-                        <TextBlock Classes="caption mono" Text="{Binding DeviceTitle}" />
-                        <TextBlock Classes="h2" Text="{Binding DeviceValue}" />
-                    </StackPanel>
-                </Border>
-                <Border Classes="card" Grid.Column="1">
-                    <StackPanel Spacing="{StaticResource Space2}">
-                        <TextBlock Classes="caption mono" Text="{Binding EngineTitle}" />
-                        <TextBlock Classes="h2" Text="{Binding EngineValue}" />
-                    </StackPanel>
-                </Border>
-                <Border Classes="card" Grid.Column="2">
-                    <StackPanel Spacing="{StaticResource Space2}">
-                        <TextBlock Classes="caption mono" Text="{Binding SafetyTitle}" />
-                        <TextBlock Classes="h2" Text="{Binding SafetyValue}" />
-                    </StackPanel>
-                </Border>
-            </Grid>
-
             <Border Classes="card">
-                <StackPanel Spacing="{StaticResource Space3}">
-                    <TextBlock Classes="h2" Text="{Binding WorkspaceTitle}" />
-                    <TextBlock
-                        Classes="body"
-                        HorizontalAlignment="Left"
-                        MaxWidth="760"
-                        Text="{Binding WorkspaceBody}" />
-                </StackPanel>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+                    <iconPacks:PackIconCodicons Kind="Info" Width="24" Height="24"
+                                               Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Top" />
+                    <StackPanel Grid.Column="1" Spacing="8">
+                        <TextBlock Classes="h2" Text="{I18 Home.About.Title}" />
+                        <TextBlock Classes="body" Text="{I18 Home.About.Body}" TextWrapping="Wrap" />
+                        <TextBlock Classes="caption" Text="{I18 Home.About.Detail}" />
+                    </StackPanel>
+                </Grid>
             </Border>
+            <StackPanel Spacing="6">
+                <TextBlock Classes="h2" Text="{I18 Home.Links.Title}" />
+                <TextBlock Classes="caption" Text="{I18 Home.Links.Description}" />
+            </StackPanel>
+            <TextBlock Text="{Binding Error}" IsVisible="{Binding HasError}" Foreground="{DynamicResource DangerBrush}"
+                       TextWrapping="Wrap" x:Name="LinkError" />
+            <ItemsControl ItemsSource="{Binding LinkGroups}" x:Name="ResourceGroups">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><UniformGrid Classes="link-groups" ColumnSpacing="16" RowSpacing="16" /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:HomeLinkGroup">
+                        <Border Classes="card" Padding="16">
+                            <StackPanel Spacing="12">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="8,8,8,0">
+                                    <iconPacks:PackIconCodicons Kind="{Binding Icon}" Width="22" Height="22"
+                                                               Foreground="{DynamicResource AccentBrush}" />
+                                    <TextBlock Grid.Column="1" Classes="h2" Text="{Binding Title}" />
+                                </Grid>
+                                <TextBlock Classes="caption" Text="{Binding Description}" Margin="8,0" MinHeight="36" />
+                                <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="8,0" />
+                                <ItemsControl ItemsSource="{Binding Links}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:HomeLink">
+                                            <Button Classes="resource-link"
+                                                    Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenLinkCommand}"
+                                                    CommandParameter="{Binding Url}"
+                                                    ToolTip.Tip="{Binding Url}" AutomationProperties.Name="{Binding Title}">
+                                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                                    <StackPanel Spacing="4">
+                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                        <TextBlock Classes="caption" Text="{Binding Host}" FontSize="11"
+                                                                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                    <iconPacks:PackIconCodicons Grid.Column="1" Kind="LinkExternal" Width="14" Height="14"
+                                                                               Foreground="{DynamicResource TextMutedBrush}" />
+                                                </Grid>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Classes="caption" Text="{I18 Home.Links.Footer}" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

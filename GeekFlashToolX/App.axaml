@@ -6,11 +6,11 @@
     xmlns:vm="using:GeekFlashToolX.ViewModels"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.DataTemplates>
+        <DataTemplate DataType="{x:Type vm:LogsViewModel}" x:DataType="vm:LogsViewModel">
+            <views:LogsView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:HomeViewModel}" x:DataType="vm:HomeViewModel">
             <views:HomeView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:OtherViewModel}" x:DataType="vm:OtherViewModel">
-            <views:OtherView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}" x:DataType="vm:SettingsViewModel">
             <views:SettingsView />
@@ -25,7 +25,9 @@
     </Application.Resources>
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
         <StyleInclude Source="avares://GeekFlashToolX/Styles/IconPacks.axaml" />
         <StyleInclude Source="avares://GeekFlashToolX/Styles/Components.axaml" />
+        <StyleInclude Source="avares://GeekFlashToolX/Styles/DataDisplay.axaml" />
     </Application.Styles>
 </Application>

@@ -24,9 +24,14 @@ public sealed class LocalizationService : ILocalizationService
 
     public IReadOnlyList<LanguageOption> AvailableLanguages { get; private set; } = [];
 
-    public string this[string key] => _strings.TryGetValue(key, out var value)
+    public string this[string key] => String(key);
+
+    public string String(string key) => _strings.TryGetValue(key, out var value)
         ? value
         : _fallback.TryGetValue(key, out value) ? value : key;
+
+    public string FormatString(string key, params object?[] arguments) =>
+        string.Format(CultureInfo.GetCultureInfo(CurrentLanguageCode), String(key), arguments);
 
     public async Task InitializeAsync(string? preferredLanguageCode, CancellationToken cancellationToken = default)
     {
@@ -39,6 +44,7 @@ public sealed class LocalizationService : ILocalizationService
             : preferredLanguageCode;
         var matched = MatchLanguage(requested);
         await SetLanguageCoreAsync(matched, cancellationToken).ConfigureAwait(false);
+        CultureChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public async Task SetLanguageAsync(string languageCode, CancellationToken cancellationToken = default)

@@ -269,6 +269,7 @@
     </Style>
     <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource TextMutedBrush}" />
     </Style>
     <Style Selector="Button:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
@@ -302,7 +303,7 @@
     <Style Selector="Window.maximized PathIcon.maximize-glyph">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-    <!-- Shared defaults: settings and feature pages use the same input controls. -->
+    <!--  Shared defaults: settings and feature pages use the same input controls.  -->
     <Style Selector="ComboBox">
         <Setter Property="Theme" Value="{StaticResource AppComboBox}" />
         <Setter Property="MinHeight" Value="44" />

@@ -1,10 +1,8 @@
 {
   "App.Name": "Geek Flash X",
-  "App.Tagline": "FLASH CONSOLE",
+  "App.Tagline": "ShuaJiXia",
   "Nav.Home": "Home",
   "Nav.Settings": "Settings",
-  "Footer.Ready": "Ready",
-  "Footer.Runtime": ".NET 10 · Avalonia 12 · ReactiveUI",
   "Settings.Eyebrow": "SYSTEM / PREFERENCES",
   "Settings.Title": "Settings",
   "Settings.Subtitle": "Personalize appearance, language and motion. Changes are applied immediately and saved automatically.",

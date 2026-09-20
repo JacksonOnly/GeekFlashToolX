@@ -192,17 +192,10 @@
                     VerticalContentAlignment="Stretch"
                     x:Name="PageHost" />
                 <Border Classes="footer" Grid.Row="1">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Ellipse
-                                Fill="{DynamicResource SuccessBrush}"
-                                Height="6"
-                                Width="6" />
-                            <TextBlock Classes="caption" Text="{I18 Footer.Ready}" />
-                        </StackPanel>
+                    <Grid ColumnDefinitions="*,Auto">
                         <TextBlock
                             Classes="caption mono"
-                            Grid.Column="2"
+                            Grid.Column="1"
                             Text="{Binding AppVersion}" />
                     </Grid>
                 </Border>

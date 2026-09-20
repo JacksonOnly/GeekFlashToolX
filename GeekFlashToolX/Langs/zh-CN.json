@@ -1,10 +1,8 @@
 {
   "App.Name": "Geek Flash X",
-  "App.Tagline": "刷机控制台",
+  "App.Tagline": "刷机匣",
   "Nav.Home": "主页",
   "Nav.Settings": "设置",
-  "Footer.Ready": "就绪",
-  "Footer.Runtime": ".NET 10 · Avalonia 12 · ReactiveUI",
   "Settings.Eyebrow": "系统 / 偏好设置",
   "Settings.Title": "设置",
   "Settings.Subtitle": "调整外观、语言与动效。更改会立即应用并自动保存。",

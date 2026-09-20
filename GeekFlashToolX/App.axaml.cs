@@ -117,6 +117,7 @@ public partial class App : Application
         IAppearanceService appearance)
     {
         var home = new HomeViewModel(localization, Resolve<IExternalLauncher>());
+        var flash = new FlashViewModel(localization);
         var logs = new LogsViewModel(localization, Resolve<ILogService>(), Resolve<IExternalLauncher>());
         var settingsPage = new SettingsViewModel(
             settings, localization, appearance, Resolve<IUpdateCoordinator>());
@@ -125,6 +126,7 @@ public partial class App : Application
 
         return new NavigationRegistryBuilder(localization)
             .Add<HomeView>("Nav.Home", PackIconCodiconsKind.Home, home)
+            .Add<FlashView>("Nav.Flash",PackIconCodiconsKind.Rocket, flash)
             .Add<LogsView>("Logs.Title", PackIconCodiconsKind.Output, logs)
             .Add<SettingsView>(
                 "Nav.Settings",

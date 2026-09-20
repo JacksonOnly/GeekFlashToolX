@@ -449,6 +449,105 @@
         <Setter Property="Height" Value="12" />
         <Setter Property="Fill" Value="{DynamicResource TextOnAccentBrush}" />
     </Style>
+    <!--  Tab navigation keeps the native control behavior while matching the app surface system.  -->
+    <Style Selector="TabControl">
+        <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="PageTransition">
+            <CrossFade Duration="0:0:0.14" />
+        </Setter>
+    </Style>
+    <Style Selector="TabControl /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Setter Property="Margin" Value="4,4,4,0" />
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Top] /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Setter Property="Margin" Value="4,4,4,0" />
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Setter Property="Margin" Value="4,0,4,4" />
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Left] /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Setter Property="Margin" Value="4,4,0,4" />
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Right] /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Setter Property="Margin" Value="0,4,4,4" />
+    </Style>
+    <Style Selector="TabControl /template/ DockPanel > Panel">
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="TabItem">
+        <Setter Property="MinHeight" Value="34" />
+        <Setter Property="MinWidth" Value="88" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="Margin" Value="0,0,2,0" />
+        <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1,1,1,0" />
+        <Setter Property="CornerRadius" Value="4,4,0,0" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="TabItem /template/ Border#PART_LayoutRoot">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition
+                    Duration="0:0:0.14"
+                    Easing="CubicEaseOut"
+                    Property="Background" />
+                <BrushTransition
+                    Duration="0:0:0.14"
+                    Easing="CubicEaseOut"
+                    Property="BorderBrush" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="TabItem /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="False" />
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="TabItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TabItem:pressed /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TabItem:selected">
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1,1,1,0" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+    </Style>
+    <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="False" />
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="TabItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentTextBrush}" />
+    </Style>
+    <Style Selector="TabItem:selected:pressed /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentTextBrush}" />
+    </Style>
+    <Style Selector="TabItem:focus-visible /template/ Border#PART_LayoutRoot">
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentTextBrush}" />
+        <Setter Property="BorderThickness" Value="1,1,1,0" />
+    </Style>
+    <Style Selector="TabItem:disabled">
+        <Setter Property="Cursor" Value="Arrow" />
+        <Setter Property="Opacity" Value="0.45" />
+    </Style>
     <!--  Layout changes respond to the content width, including manual sidebar expansion.  -->
     <Style Selector="StackPanel.page, Grid.page">
         <Setter Property="Margin" Value="{StaticResource PaddingPage}" />
@@ -466,7 +565,7 @@
     <Style Selector="Window.compact Border.hero-art">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="Window.no-motion Button, Window.no-motion Button /template/ ContentPresenter#PART_ContentPresenter,                      Window.no-motion SplitView /template/ Panel#PART_PaneRoot,                      Window.no-motion ComboBox /template/ Border#Background,                      Window.no-motion ComboBox /template/ PathIcon#DropDownGlyph,                      Window.no-motion ToggleSwitch /template/ Border">
+    <Style Selector="Window.no-motion Button, Window.no-motion Button /template/ ContentPresenter#PART_ContentPresenter,                      Window.no-motion SplitView /template/ Panel#PART_PaneRoot,                      Window.no-motion ComboBox /template/ Border#Background,                      Window.no-motion ComboBox /template/ PathIcon#DropDownGlyph,                      Window.no-motion ToggleSwitch /template/ Border,                      Window.no-motion TabItem,                      Window.no-motion TabItem /template/ Border#PART_LayoutRoot,                      Window.no-motion TabItem /template/ Border#PART_SelectedPipe">
         <Setter Property="Transitions">
             <Transitions />
         </Setter>
@@ -480,6 +579,17 @@
         </Setter>
     </Style>
     <Style Selector="Window.no-motion ItemsControl.nav-children, Window.no-motion iconPacks|PackIconCodicons.nav-chevron">
+        <Setter Property="Transitions">
+            <Transitions />
+        </Setter>
+    </Style>
+    <Style Selector="Window.no-motion TabControl">
+        <Setter Property="PageTransition" Value="{x:Null}" />
+    </Style>
+    <Style Selector="Window.dark TabControl">
+        <Setter Property="PageTransition" Value="{x:Null}" />
+    </Style>
+    <Style Selector="Window.dark TabItem /template/ Border#PART_LayoutRoot, Window.dark TabItem /template/ Border#PART_SelectedPipe">
         <Setter Property="Transitions">
             <Transitions />
         </Setter>

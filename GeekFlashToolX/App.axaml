@@ -2,20 +2,7 @@
     RequestedThemeVariant="Default"
     x:Class="GeekFlashToolX.App"
     xmlns="https://github.com/avaloniaui"
-    xmlns:views="using:GeekFlashToolX.Views"
-    xmlns:vm="using:GeekFlashToolX.ViewModels"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Application.DataTemplates>
-        <DataTemplate DataType="{x:Type vm:LogsViewModel}" x:DataType="vm:LogsViewModel">
-            <views:LogsView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:HomeViewModel}" x:DataType="vm:HomeViewModel">
-            <views:HomeView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:SettingsViewModel}" x:DataType="vm:SettingsViewModel">
-            <views:SettingsView />
-        </DataTemplate>
-    </Application.DataTemplates>
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

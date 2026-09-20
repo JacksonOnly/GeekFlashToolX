@@ -18,22 +18,42 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Window.Resources>
         <DataTemplate x:DataType="vm:NavigationItem" x:Key="NavigationTemplate">
-            <Button
-                AutomationProperties.Name="{I18 {Binding TitleKey}}"
-                Classes="nav"
-                Classes.active="{Binding IsSelected}"
-                Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).NavigateToCommand}"
-                CommandParameter="{Binding Key}"
-                HorizontalAlignment="Stretch"
-                ToolTip.Tip="{I18 {Binding TitleKey}}">
-                <Grid ColumnDefinitions="20,*" ColumnSpacing="14">
-                    <iconPacks:PackIconCodicons Kind="{Binding Icon}" />
-                    <TextBlock
-                        Classes="nav-label"
-                        Grid.Column="1"
-                        Text="{I18 {Binding TitleKey}}" />
-                </Grid>
-            </Button>
+            <StackPanel>
+                <Button
+                    AutomationProperties.Name="{I18 {Binding TitleKey}}"
+                    Classes="nav"
+                    Classes.active="{Binding IsActive}"
+                    Classes.expanded="{Binding IsExpanded}"
+                    Classes.group="{Binding HasChildren}"
+                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).NavigateToCommand}"
+                    CommandParameter="{Binding}"
+                    HorizontalAlignment="Stretch"
+                    ToolTip.Tip="{I18 {Binding TitleKey}}">
+                    <Grid ColumnDefinitions="20,*,16" ColumnSpacing="14">
+                        <iconPacks:PackIconCodicons Kind="{Binding Icon}" />
+                        <TextBlock
+                            Classes="nav-label"
+                            Grid.Column="1"
+                            Text="{I18 {Binding TitleKey}}" />
+                        <iconPacks:PackIconCodicons
+                            Classes="nav-label nav-chevron"
+                            Grid.Column="2"
+                            IsVisible="{Binding HasChildren}"
+                            Kind="ChevronRight" />
+                    </Grid>
+                </Button>
+                <ItemsControl
+                    Classes="nav-children"
+                    Classes.expanded="{Binding IsExpanded}"
+                    ItemTemplate="{StaticResource NavigationTemplate}"
+                    ItemsSource="{Binding Children}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
         </DataTemplate>
     </Window.Resources>
     <Grid RowDefinitions="48,*">

@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Animation;
+using Avalonia.Controls;
 using GeekFlashToolX.Core.Services;
 using ReactiveUI;
 
@@ -16,7 +17,7 @@ public sealed class MainViewModel : ViewModelBase
     private bool _disposed;
     private readonly IPageTransition _animatedPageTransition = new CrossFade(TimeSpan.FromMilliseconds(220));
     private readonly IPageTransition _instantPageTransition = new InstantPageTransition();
-    private ViewModelBase _currentPage;
+    private Control _currentPage;
     private bool _isSidebarExpanded = true;
 
     public MainViewModel(
@@ -27,8 +28,8 @@ public sealed class MainViewModel : ViewModelBase
         _settingsService = settingsService;
         _navigation = navigation;
         _settings = navigation.Page<SettingsViewModel>();
-        _currentPage = navigation.Initial.Page;
-        NavigateToCommand = ReactiveCommand.Create<PageKey>(NavigateTo);
+        _currentPage = navigation.Initial.View!;
+        NavigateToCommand = ReactiveCommand.Create<NavigationItem>(ActivateNavigationItem);
         ToggleSidebarCommand = ReactiveCommand.Create(() => IsSidebarExpanded = !IsSidebarExpanded);
 
         _settings.PropertyChanged += OnSettingsPropertyChanged;
@@ -48,13 +49,13 @@ public sealed class MainViewModel : ViewModelBase
         }
     }
 
-    public ViewModelBase CurrentPage
+    public Control CurrentPage
     {
         get => _currentPage;
         private set => this.RaiseAndSetIfChanged(ref _currentPage, value);
     }
 
-    public IReadOnlyList<NavigationItem> NavigationItems => _navigation.Items;
+    public IReadOnlyList<NavigationItem> NavigationItems => _navigation.AllItems;
     public IReadOnlyList<NavigationItem> PrimaryNavigationItems => _navigation.PrimaryItems;
     public IReadOnlyList<NavigationItem> FooterNavigationItems => _navigation.FooterItems;
     public bool AnimationsDisabled => !_settingsService.Current.AnimationsEnabled;
@@ -66,14 +67,19 @@ public sealed class MainViewModel : ViewModelBase
     public ICommand NavigateToCommand { get; }
     public ICommand ToggleSidebarCommand { get; }
 
-    private void NavigateTo(PageKey key)
+    private void ActivateNavigationItem(NavigationItem item)
     {
-        if (_disposed || !_navigation.TryGet(key, out var destination)) return;
-        if (!ReferenceEquals(CurrentPage, destination.Page))
+        if (_disposed) return;
+        if (item.HasChildren)
         {
-            CurrentPage = destination.Page;
-            _navigation.Select(destination);
+            item.IsExpanded = !item.IsExpanded;
+            if (item.IsExpanded) IsSidebarExpanded = true;
+            return;
         }
+
+        if (item.View is null) return;
+        if (!ReferenceEquals(CurrentPage, item.View)) CurrentPage = item.View;
+        _navigation.Select(item);
         if (IsCompact) IsSidebarExpanded = false;
     }
 

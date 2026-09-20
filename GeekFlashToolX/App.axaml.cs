@@ -91,21 +91,7 @@ public partial class App : Application
                 var localization = Resolve<ILocalizationService>();
                 var settings = Resolve<IAppSettingsService>();
                 var appearance = Resolve<IAppearanceService>();
-                
-                
-                var home = new HomeViewModel(localization, Resolve<IExternalLauncher>());
-                var settingsPage = new SettingsViewModel(settings, localization, appearance, Resolve<IUpdateCoordinator>());
-                var logsPage = new LogsViewModel(localization, Resolve<ILogService>(), Resolve<IExternalLauncher>());
-                await logsPage.RefreshAsync();
-                var navigation = new NavigationRegistryBuilder(localization)
-                    .Add(PageKey.Home, "Nav.Home", PackIconCodiconsKind.Home, home)
-                    .Add(PageKey.Logs, "Logs.Title", PackIconCodiconsKind.Output, logsPage)
-                    .Add(PageKey.Settings, "Nav.Settings", PackIconCodiconsKind.SettingsGear, settingsPage,
-                        NavigationPlacement.Footer)
-                    .StartAt(PageKey.Home)
-                    .Build();
-                
-                
+                var navigation = await CreateNavigationAsync(localization, settings, appearance);
                 var main = new MainViewModel(localization, settings, navigation);
                 var window = new MainWindow { DataContext = main };
                 var lifetime = new CancellationTokenSource();
@@ -123,6 +109,29 @@ public partial class App : Application
             Resolve<ILogService>().Write(WorkLogLevel.Error, "Application startup failed.", exception);
             splashViewModel.Status = exception.Message;
         }
+    }
+
+    private static async Task<NavigationRegistry> CreateNavigationAsync(
+        ILocalizationService localization,
+        IAppSettingsService settings,
+        IAppearanceService appearance)
+    {
+        var home = new HomeViewModel(localization, Resolve<IExternalLauncher>());
+        var logs = new LogsViewModel(localization, Resolve<ILogService>(), Resolve<IExternalLauncher>());
+        var settingsPage = new SettingsViewModel(
+            settings, localization, appearance, Resolve<IUpdateCoordinator>());
+
+        await logs.RefreshAsync();
+
+        return new NavigationRegistryBuilder(localization)
+            .Add<HomeView>("Nav.Home", PackIconCodiconsKind.Home, home)
+            .Add<LogsView>("Logs.Title", PackIconCodiconsKind.Output, logs)
+            .Add<SettingsView>(
+                "Nav.Settings",
+                PackIconCodiconsKind.SettingsGear,
+                settingsPage,
+                NavigationPlacement.Footer)
+            .Build();
     }
 
     private static T Resolve<T>() where T : class

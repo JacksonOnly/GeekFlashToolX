@@ -1,39 +1,71 @@
+using Avalonia.Controls;
 using GeekFlashToolX.Core.Services;
 using IconPacks.Avalonia.Codicons;
 using ReactiveUI;
 
 namespace GeekFlashToolX.ViewModels;
 
-public enum PageKey { Home, Logs, Settings }
-
 public enum NavigationPlacement { Primary, Footer }
 
-public sealed record NavigationRegistration(
-    PageKey Key,
+internal sealed record NavigationRegistration(
     string TitleKey,
     PackIconCodiconsKind Icon,
-    ViewModelBase Page,
-    NavigationPlacement Placement = NavigationPlacement.Primary);
+    ViewModelBase? ViewModel,
+    Func<Control>? ViewFactory,
+    IReadOnlyList<NavigationRegistration> Children,
+    NavigationPlacement Placement,
+    bool IsExpanded);
 
-/// <summary>A sidebar entry and its single, window-lifetime page instance.</summary>
-public sealed class NavigationItem(
-    ILocalizationService localization,
-    PageKey key,
-    string titleKey,
-    PackIconCodiconsKind icon,
-    ViewModelBase page,
-    NavigationPlacement placement) : ViewModelBase(localization)
+/// <summary>A page or expandable group displayed in the navigation sidebar.</summary>
+public sealed class NavigationItem : ViewModelBase
 {
     private bool _isSelected;
+    private bool _isActive;
+    private bool _isExpanded;
 
-    public PageKey Key { get; } = key;
-    public string TitleKey { get; } = titleKey;
-    public PackIconCodiconsKind Icon { get; } = icon;
-    public ViewModelBase Page { get; } = page;
-    public NavigationPlacement Placement { get; } = placement;
+    internal NavigationItem(
+        ILocalizationService localization,
+        NavigationRegistration registration,
+        IReadOnlyList<NavigationItem> children) : base(localization)
+    {
+        TitleKey = registration.TitleKey;
+        Icon = registration.Icon;
+        ViewModel = registration.ViewModel;
+        Placement = registration.Placement;
+        Children = children;
+        _isExpanded = registration.IsExpanded;
+
+        if (registration.ViewFactory is not null)
+        {
+            View = registration.ViewFactory();
+            View.DataContext = ViewModel;
+        }
+    }
+
+    public string TitleKey { get; }
+    public PackIconCodiconsKind Icon { get; }
+    public ViewModelBase? ViewModel { get; }
+    public Control? View { get; }
+    public NavigationPlacement Placement { get; }
+    public IReadOnlyList<NavigationItem> Children { get; }
+    public bool HasChildren => Children.Count > 0;
+    public bool CanNavigate => View is not null;
+
     public bool IsSelected
     {
         get => _isSelected;
         internal set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+    }
+
+    public bool IsActive
+    {
+        get => _isActive;
+        internal set => this.RaiseAndSetIfChanged(ref _isActive, value);
+    }
+
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
     }
 }

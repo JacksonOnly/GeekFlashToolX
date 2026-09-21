@@ -1,6 +1,12 @@
 {
   "App.Name": "Geek Flash X",
   "App.Tagline": "ShuaJiXia",
+  "Splash.CreatingPages": "Preparing pages…",
+  "Splash.CreatingViewModels": "Creating page models…",
+  "Splash.LoadingLogs": "Loading logs…",
+  "Splash.MonitoringDevices": "Starting device monitoring…",
+  "Splash.OpeningWindow": "Opening main window…",
+  "Splash.Ready": "Ready",
   "Nav.Home": "Home",
   "Nav.Flash": "Flash device",
   "Nav.Settings": "Settings",

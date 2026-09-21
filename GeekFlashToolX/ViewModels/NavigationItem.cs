@@ -11,7 +11,6 @@ internal sealed record NavigationRegistration(
     string TitleKey,
     PackIconCodiconsKind Icon,
     ViewModelBase? ViewModel,
-    Func<Control>? ViewFactory,
     IReadOnlyList<NavigationRegistration> Children,
     NavigationPlacement Placement,
     bool IsExpanded);
@@ -35,11 +34,7 @@ public sealed class NavigationItem : ViewModelBase
         Children = children;
         _isExpanded = registration.IsExpanded;
 
-        if (registration.ViewFactory is not null)
-        {
-            View = registration.ViewFactory();
-            View.DataContext = ViewModel;
-        }
+        if (ViewModel is not null) View = ViewLocator.Instance.GetView(ViewModel);
     }
 
     public string TitleKey { get; }

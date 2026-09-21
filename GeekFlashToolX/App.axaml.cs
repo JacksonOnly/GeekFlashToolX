@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using System.Diagnostics;
 using GeekFlashToolX.Core.Services;
 using GeekFlashToolX.Services;
 using GeekFlashToolX.ViewModels;
@@ -12,6 +11,8 @@ using System.Net.Http;
 using System.Reflection;
 using GeekFlashToolX.Core.Models;
 using IconPacks.Avalonia.Codicons;
+using GeekFlashToolX.Views.Page;
+using GeekFlashCore.UsbWatcher;
 
 namespace GeekFlashToolX;
 
@@ -26,7 +27,6 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            RegisterServices(desktop);
             var splashViewModel = new SplashViewModel();
             var splash = new SplashWindow { DataContext = splashViewModel };
             desktop.MainWindow = splash;
@@ -78,67 +78,200 @@ public partial class App : Application
         SplashWindow splash,
         SplashViewModel splashViewModel)
     {
-        var splashStarted = Stopwatch.StartNew();
+        NavigationRegistry? navigation = null;
+        MainViewModel? main = null;
+        var mainWindowShown = false;
+        using var startupLifetime = new CancellationTokenSource();
+        void OnSplashClosed(object? sender, EventArgs args) => startupLifetime.Cancel();
+        splash.Closed += OnSplashClosed;
         try
         {
-            var progress = new Progress<double>(value => splashViewModel.Progress = value * 100);
-            await Resolve<IStartupService>().InitializeAsync(progress);
-            var remainingSplashTime = TimeSpan.FromSeconds(2) - splashStarted.Elapsed;
-            if (remainingSplashTime > TimeSpan.Zero)
-                await Task.Delay(remainingSplashTime);
-            await Dispatcher.UIThread.InvokeAsync(async () =>
+            await YieldForSplashAsync();
+            startupLifetime.Token.ThrowIfCancellationRequested();
+            splashViewModel.SetStage("正在注册服务…", 2);
+            RegisterServices(desktop);
+            splashViewModel.SetStage("正在注册页面…", 6);
+            RegisterViews();
+
+            splashViewModel.SetStage("正在加载设置与语言…", 10);
+            await InitializeConfigurationAsync(splashViewModel, startupLifetime.Token);
+            startupLifetime.Token.ThrowIfCancellationRequested();
+
+            var localization = Resolve<ILocalizationService>();
+            var settings = Resolve<IAppSettingsService>();
+            splashViewModel.SetStage(localization.String("Splash.CreatingViewModels"), 55);
+            await YieldForSplashAsync();
+            startupLifetime.Token.ThrowIfCancellationRequested();
+            var pages = CreatePageViewModels(localization, settings, Resolve<IAppearanceService>());
+            splashViewModel.SetStage(localization.String("Splash.CreatingPages"), 64);
+            await YieldForSplashAsync();
+            if (startupLifetime.IsCancellationRequested)
             {
-                var localization = Resolve<ILocalizationService>();
-                var settings = Resolve<IAppSettingsService>();
-                var appearance = Resolve<IAppearanceService>();
-                var navigation = await CreateNavigationAsync(localization, settings, appearance);
-                var main = new MainViewModel(localization, settings, navigation);
-                var window = new MainWindow { DataContext = main };
-                var lifetime = new CancellationTokenSource();
-                window.Closed += (_, _) => { lifetime.Cancel(); main.Dispose(); };
-                desktop.MainWindow = window;
-                window.Show();
-                splash.Close();
-                Resolve<ILogService>().Write(WorkLogLevel.Information, "Application startup completed.");
-                _ = Resolve<IUpdateCoordinator>().CheckAndNotifyAsync(automatic: true, lifetime.Token);
-            });
+                pages.Dispose();
+                startupLifetime.Token.ThrowIfCancellationRequested();
+            }
+            navigation = BuildNavigation(localization, pages);
+
+            splashViewModel.SetStage(localization.String("Splash.LoadingLogs"), 72);
+            await PreloadContentAsync(navigation);
+            startupLifetime.Token.ThrowIfCancellationRequested();
+
+            splashViewModel.SetStage(localization.String("Splash.MonitoringDevices"), 86);
+            await YieldForSplashAsync();
+            startupLifetime.Token.ThrowIfCancellationRequested();
+            StartDeviceMonitoring(navigation.Page<FlashViewModel>());
+            startupLifetime.Token.ThrowIfCancellationRequested();
+
+            splashViewModel.SetStage(localization.String("Splash.OpeningWindow"), 94);
+            main = new MainViewModel(localization, settings, navigation);
+            var window = CreateMainWindow(main, out var lifetime);
+            desktop.MainWindow = window;
+            window.Show();
+            mainWindowShown = true;
+            main = null;
+            navigation = null;
+            splashViewModel.SetStage(localization.String("Splash.Ready"), 100);
+            await YieldForSplashAsync();
+            splash.Close();
+            Resolve<ILogService>().Write(WorkLogLevel.Information, "Application startup completed.");
+            _ = Resolve<IUpdateCoordinator>().CheckAndNotifyAsync(automatic: true, lifetime.Token);
+        }
+        catch (OperationCanceledException) when (startupLifetime.IsCancellationRequested)
+        {
+            main?.Dispose();
+            if (main is null) navigation?.Dispose();
         }
         catch (Exception exception)
         {
+            if (mainWindowShown)
+            {
+                Console.Error.WriteLine(exception);
+                Locator.Current.GetService<ILogService>()?.Write(
+                    WorkLogLevel.Error, "Post-startup action failed.", exception);
+                return;
+            }
+            main?.Dispose();
+            if (main is null) navigation?.Dispose();
+            desktop.MainWindow = splash;
             Console.Error.WriteLine(exception);
-            Resolve<ILogService>().Write(WorkLogLevel.Error, "Application startup failed.", exception);
+            Locator.Current.GetService<ILogService>()?.Write(WorkLogLevel.Error, "Application startup failed.", exception);
             splashViewModel.Status = exception.Message;
+        }
+        finally
+        {
+            splash.Closed -= OnSplashClosed;
         }
     }
 
-    private static async Task<NavigationRegistry> CreateNavigationAsync(
+    private static void RegisterViews()
+    {
+        var views = ViewLocator.Instance;
+        views.EnsureView<HomeViewModel, HomeView>();
+        views.EnsureView<FlashViewModel, FlashView>();
+        views.EnsureView<QcomDeviceConnectionViewModel, QcomDeviceConnectionView>();
+        views.EnsureView<LogsViewModel, LogsView>();
+        views.EnsureView<SettingsViewModel, SettingsView>();
+    }
+
+    private static Task InitializeConfigurationAsync(SplashViewModel splash, CancellationToken cancellationToken)
+    {
+        var progress = new Progress<double>(value => splash.Progress = 10 + value * 45);
+        return Resolve<IStartupService>().InitializeAsync(progress, cancellationToken);
+    }
+
+    private static async Task YieldForSplashAsync() =>
+        await Dispatcher.UIThread.InvokeAsync(static () => { }, DispatcherPriority.Background);
+
+    private static PageViewModels CreatePageViewModels(
         ILocalizationService localization,
         IAppSettingsService settings,
         IAppearanceService appearance)
     {
-        var home = new HomeViewModel(localization, Resolve<IExternalLauncher>());
-        var flash = new FlashViewModel(localization);
-        var logs = new LogsViewModel(localization, Resolve<ILogService>(), Resolve<IExternalLauncher>());
-        var settingsPage = new SettingsViewModel(
-            settings, localization, appearance, Resolve<IUpdateCoordinator>());
+        HomeViewModel? home = null;
+        FlashViewModel? flash = null;
+        LogsViewModel? logs = null;
+        SettingsViewModel? settingsPage = null;
+        try
+        {
+            home = new HomeViewModel(localization, Resolve<IExternalLauncher>());
+            flash = new FlashViewModel(localization, UsbDeviceMonitorFactory.Create(), UsbEnumeratorFactory.Create());
+            logs = new LogsViewModel(localization, Resolve<ILogService>(), Resolve<IExternalLauncher>());
+            settingsPage = new SettingsViewModel(settings, localization, appearance, Resolve<IUpdateCoordinator>());
+            return new PageViewModels(home, flash, logs, settingsPage);
+        }
+        catch
+        {
+            home?.Dispose();
+            flash?.Dispose();
+            logs?.Dispose();
+            settingsPage?.Dispose();
+            throw;
+        }
+    }
 
-        await logs.RefreshAsync();
+    private static NavigationRegistry BuildNavigation(ILocalizationService localization, PageViewModels pages)
+    {
+        try
+        {
+            return new NavigationRegistryBuilder(localization)
+                .Add<HomeView>("Nav.Home", PackIconCodiconsKind.Home, pages.Home)
+                .Add<FlashView>("Nav.Flash", PackIconCodiconsKind.Rocket, pages.Flash)
+                .Add<LogsView>("Logs.Title", PackIconCodiconsKind.Output, pages.Logs)
+                .Add<SettingsView>(
+                    "Nav.Settings", PackIconCodiconsKind.SettingsGear, pages.Settings, NavigationPlacement.Footer)
+                .Build();
+        }
+        catch
+        {
+            pages.Dispose();
+            throw;
+        }
+    }
 
-        return new NavigationRegistryBuilder(localization)
-            .Add<HomeView>("Nav.Home", PackIconCodiconsKind.Home, home)
-            .Add<FlashView>("Nav.Flash",PackIconCodiconsKind.Rocket, flash)
-            .Add<LogsView>("Logs.Title", PackIconCodiconsKind.Output, logs)
-            .Add<SettingsView>(
-                "Nav.Settings",
-                PackIconCodiconsKind.SettingsGear,
-                settingsPage,
-                NavigationPlacement.Footer)
-            .Build();
+    private static Task PreloadContentAsync(NavigationRegistry navigation) =>
+        navigation.Page<LogsViewModel>().RefreshAsync();
+
+    private static void StartDeviceMonitoring(FlashViewModel flash)
+    {
+        try { flash.StartMonitoring(); }
+        catch (Exception exception)
+        {
+            Resolve<ILogService>().Write(WorkLogLevel.Warning, "USB monitoring could not start.", exception);
+        }
+    }
+
+    private static MainWindow CreateMainWindow(MainViewModel main, out CancellationTokenSource lifetime)
+    {
+        var window = new MainWindow { DataContext = main };
+        lifetime = new CancellationTokenSource();
+        var windowLifetime = lifetime;
+        window.Closed += (_, _) =>
+        {
+            windowLifetime.Cancel();
+            main.Dispose();
+            windowLifetime.Dispose();
+        };
+        return window;
     }
 
     private static T Resolve<T>() where T : class
     {
         return Locator.Current.GetService<T>() ??
                throw new InvalidOperationException($"Service {typeof(T).Name} is not registered.");
+    }
+
+    private sealed record PageViewModels(
+        HomeViewModel Home,
+        FlashViewModel Flash,
+        LogsViewModel Logs,
+        SettingsViewModel Settings) : IDisposable
+    {
+        public void Dispose()
+        {
+            Home.Dispose();
+            Flash.Dispose();
+            Logs.Dispose();
+            Settings.Dispose();
+        }
     }
 }

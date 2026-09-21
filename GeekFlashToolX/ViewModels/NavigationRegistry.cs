@@ -43,6 +43,8 @@ public sealed class NavigationRegistry : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        foreach (var page in _allItems.Select(item => item.ViewModel).OfType<ViewModelBase>().Distinct())
+            ViewLocator.Instance.Release(page);
         foreach (var item in _allItems) item.Dispose();
         foreach (var page in _allItems.Select(item => item.ViewModel).OfType<ViewModelBase>().Distinct())
             page.Dispose();
@@ -97,7 +99,7 @@ public sealed class NavigationRegistryBuilder(ILocalizationService localization)
     {
         var group = new NavigationGroupBuilder();
         configure(group);
-        _registrations.Add(new(titleKey, icon, null, null, group.Build(), placement, isExpanded));
+        _registrations.Add(new(titleKey, icon, null, group.Build(), placement, isExpanded));
         return this;
     }
 
@@ -109,7 +111,16 @@ public sealed class NavigationRegistryBuilder(ILocalizationService localization)
         ViewModelBase viewModel,
         NavigationPlacement placement)
         where TView : Control, new() =>
-        new(titleKey, icon, viewModel, static () => new TView(), [], placement, false);
+        RegisterPage<TView>(titleKey, icon, viewModel, placement);
+
+    private static NavigationRegistration RegisterPage<TView>(
+        string titleKey, PackIconCodiconsKind icon, ViewModelBase viewModel, NavigationPlacement placement)
+        where TView : Control, new()
+    {
+        var type = viewModel.GetType();
+        ViewLocator.Instance.EnsureView<TView>(type);
+        return new(titleKey, icon, viewModel, [], placement, false);
+    }
 }
 
 public sealed class NavigationGroupBuilder
@@ -133,7 +144,7 @@ public sealed class NavigationGroupBuilder
         var group = new NavigationGroupBuilder();
         configure(group);
         _registrations.Add(new(
-            titleKey, icon, null, null, group.Build(), NavigationPlacement.Primary, isExpanded));
+            titleKey, icon, null, group.Build(), NavigationPlacement.Primary, isExpanded));
         return this;
     }
 

@@ -1,6 +1,12 @@
 {
   "App.Name": "Geek Flash X",
   "App.Tagline": "刷机匣",
+  "Splash.CreatingPages": "正在预加载页面…",
+  "Splash.CreatingViewModels": "正在创建页面数据…",
+  "Splash.LoadingLogs": "正在读取日志…",
+  "Splash.MonitoringDevices": "正在启动设备监听…",
+  "Splash.OpeningWindow": "正在打开主窗口…",
+  "Splash.Ready": "准备就绪",
   "Nav.Home": "主页",
   "Nav.Flash": "设备刷写",
   "Nav.Settings": "设置",

@@ -21,6 +21,8 @@
             <SolidColorBrush x:Key="AccentHoverBrush">#2A72DB</SolidColorBrush>
             <SolidColorBrush x:Key="AccentPressedBrush">#235FBE</SolidColorBrush>
             <SolidColorBrush x:Key="DangerBrush">#C92E43</SolidColorBrush>
+            <SolidColorBrush x:Key="DangerMutedBrush">#20C92E43</SolidColorBrush>
+            <SolidColorBrush x:Key="DangerPressedBrush">#A32336</SolidColorBrush>
             <SolidColorBrush x:Key="SuccessBrush">#168A52</SolidColorBrush>
             <SolidColorBrush x:Key="CodeSurfaceBrush">#EBF0F8</SolidColorBrush>
             <LinearGradientBrush EndPoint="100%,100%" StartPoint="0%,0%" x:Key="SplashGradientBrush">
@@ -46,6 +48,8 @@
             <SolidColorBrush x:Key="AccentHoverBrush">#2A72DB</SolidColorBrush>
             <SolidColorBrush x:Key="AccentPressedBrush">#235FBE</SolidColorBrush>
             <SolidColorBrush x:Key="DangerBrush">#C92E43</SolidColorBrush>
+            <SolidColorBrush x:Key="DangerMutedBrush">#30C92E43</SolidColorBrush>
+            <SolidColorBrush x:Key="DangerPressedBrush">#A32336</SolidColorBrush>
             <SolidColorBrush x:Key="SuccessBrush">#3DDC97</SolidColorBrush>
             <SolidColorBrush x:Key="CodeSurfaceBrush">#181F2B</SolidColorBrush>
             <LinearGradientBrush EndPoint="100%,100%" StartPoint="0%,0%" x:Key="SplashGradientBrush">

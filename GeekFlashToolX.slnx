@@ -1,4 +1,20 @@
 <Solution>
+  <Folder Name="/Core/">
+    <Project Path="externals/core/src/GeekFlashCore.Abstractions/GeekFlashCore.Abstractions.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.Android.Sparse/GeekFlashCore.Android.Sparse.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.BlockDevice.Abstractions/GeekFlashCore.BlockDevice.Abstractions.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.BlockDevice/GeekFlashCore.BlockDevice.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.Gpt.Abstractions/GeekFlashCore.Gpt.Abstractions.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.Gpt/GeekFlashCore.Gpt.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.Protocol.Abstractions/GeekFlashCore.Protocol.Abstractions.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.Protocol.Qcom.Abstractions/GeekFlashCore.Protocol.Qcom.Abstractions.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.Protocol.Qcom/GeekFlashCore.Protocol.Qcom.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.Shared/GeekFlashCore.Shared.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.Transport.Abstractions/GeekFlashCore.Transport.Abstractions.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.Transport.SerialPort/GeekFlashCore.Transport.SerialPort.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.UsbWatcher.Abstractions/GeekFlashCore.UsbWatcher.Abstractions.csproj" />
+    <Project Path="externals/core/src/GeekFlashCore.UsbWatcher/GeekFlashCore.UsbWatcher.csproj" />
+  </Folder>
   <Project Path="GeekFlashToolX.Core/GeekFlashToolX.Core.csproj" />
   <Project Path="GeekFlashToolX.Services/GeekFlashToolX.Services.csproj" />
   <Project Path="GeekFlashToolX/GeekFlashToolX.csproj" />

@@ -1,0 +1,39 @@
+<UserControl
+    x:Class="GeekFlashToolX.Views.Page.QcomDeviceConnectionView"
+    x:DataType="vm:QcomDeviceConnectionViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:vm="using:GeekFlashToolX.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Margin="28" Spacing="18">
+            <TextBlock Classes="h1" Text="Qualcomm EDL 设备连接示例" />
+            <TextBlock Classes="caption" Text="按 Core CLI 的 COM → Sahara → Loader → Firehose 顺序连接。仅识别 05C6:9008。" TextWrapping="Wrap" />
+            <Border Background="{DynamicResource SurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding DeviceName}" />
+                    <TextBlock Text="{Binding PortName}" />
+                    <TextBlock Classes="caption" Text="{Binding HardwareId}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <StackPanel Spacing="8">
+                <TextBlock FontWeight="SemiBold" Text="Firehose Loader 文件" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBox Text="{Binding LoaderPath}" PlaceholderText="选择与设备匹配的 prog_firehose 文件" />
+                    <Button Grid.Column="1" Click="OnBrowseLoader" Content="浏览…" />
+                </Grid>
+                <TextBlock Classes="caption" Text="可先探测 Sahara；完整连接需要适配设备的 Loader，部分厂商还需要认证资源。" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Command="{Binding ProbeCommand}" Content="探测 Sahara" IsEnabled="{Binding CanProbe}" />
+                <Button Classes="primary" Command="{Binding ConnectCommand}" Content="连接设备" IsEnabled="{Binding CanConnect}" />
+                <Button Command="{Binding CloseCommand}" Content="断开设备" IsEnabled="{Binding CanClose}" />
+            </StackPanel>
+            <Border Background="{DynamicResource SurfaceMutedBrush}" CornerRadius="8" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding Status}" />
+                    <TextBlock Text="{Binding Details}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

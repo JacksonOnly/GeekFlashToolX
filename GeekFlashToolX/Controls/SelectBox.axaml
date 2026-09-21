@@ -1,0 +1,60 @@
+<UserControl
+    x:Class="GeekFlashToolX.Controls.SelectBox"
+    x:Name="Root"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:CompileBindings="False">
+    <UserControl.Styles>
+        <Style Selector="Button.select-option">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="RenderTransform" Value="scale(1)" />
+        </Style>
+        <Style Selector="Button.select-option:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentTextBrush}" />
+        </Style>
+        <Style Selector="Button.select-option:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentMutedBrush}" />
+        </Style>
+    </UserControl.Styles>
+    <Grid>
+        <TextBox
+            x:Name="SearchTextBox"
+            AutomationProperties.Name="搜索并选择项目"
+            GotFocus="OnSearchFocus"
+            PlaceholderText="{Binding PlaceholderText, ElementName=Root}"
+            PointerPressed="OnSearchPointerPressed"
+            TextChanged="OnSearchTextChanged" />
+        <Popup x:Name="DropDown" IsLightDismissEnabled="True" Placement="Bottom">
+            <Border
+                x:Name="DropDownSurface"
+                Background="{DynamicResource SurfaceElevatedBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="4">
+                <ScrollViewer MaxHeight="280" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl x:Name="ItemList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Classes="select-option"
+                                    Click="OnItemClicked">
+                                    <ContentControl
+                                        Content="{Binding}"
+                                        ContentTemplate="{Binding ItemTemplate, ElementName=Root}" />
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

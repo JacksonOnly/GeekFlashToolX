@@ -1,0 +1,24 @@
+<Window
+    x:Class="GeekFlashToolX.Views.ProtocolSelectionWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Width="400"
+    Height="220"
+    MinWidth="360"
+    MinHeight="200"
+    CanResize="False"
+    WindowStartupLocation="CenterOwner"
+    Title="选择连接协议"
+    Background="{DynamicResource SurfaceBackgroundBrush}">
+    <Grid Margin="24" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+        <TextBlock Classes="h2" Text="选择连接协议" />
+        <TextBlock Grid.Row="1" Classes="caption" Text="请选择此设备使用的协议。" />
+        <ComboBox x:Name="ProtocolComboBox" Grid.Row="2" VerticalAlignment="Top" SelectedIndex="0">
+            <ComboBoxItem Content="Qualcomm" />
+        </ComboBox>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button Content="取消" Click="OnCancel" />
+            <Button Classes="primary" Content="继续" Click="OnConfirm" />
+        </StackPanel>
+    </Grid>
+</Window>

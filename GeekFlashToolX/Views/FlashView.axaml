@@ -9,5 +9,74 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:GeekFlashToolX.ViewModels"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <TabControl BorderThickness="0" />
+    <UserControl.Styles>
+        <Style Selector="Button.title-button.tab-close">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="Button.title-button.tab-close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource DangerMutedBrush}" />
+        </Style>
+        <Style Selector="Button.title-button.tab-close PathIcon">
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+        </Style>
+        <Style Selector="Button.title-button.tab-close:pointerover PathIcon">
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+        </Style>
+        <Style Selector="Button.title-button.tab-close:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource DangerPressedBrush}" />
+        </Style>
+        <Style Selector="Button.title-button.tab-close:pressed PathIcon">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="TabItem">
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
+    <TabControl
+        BorderThickness="0"
+        ItemsSource="{Binding Tabs}"
+        Padding="0"
+        PageTransition="{x:Null}"
+        SelectedItem="{Binding SelectedTab}">
+        <TabControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:FlashTabItemViewModel">
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    VerticalAlignment="Center">
+                    <TextBlock HorizontalAlignment="Center" Text="{Binding Title}" VerticalAlignment="Center" />
+                    <Button
+                        AutomationProperties.Name="关闭设备页面"
+                        Classes="title-button tab-close"
+                        Click="OnCloseTab"
+                        Height="26"
+                        IsEnabled="{Binding CanClose}"
+                        IsVisible="{Binding IsClosable}"
+                        MinHeight="0"
+                        MinWidth="0"
+                        Padding="0"
+                        ToolTip.Tip="断开并关闭设备页面"
+                        Width="26">
+                        <PathIcon
+                            Data="M3.7,2.3 L8,6.6 L12.3,2.3 L13.7,3.7 L9.4,8 L13.7,12.3 L12.3,13.7 L8,9.4 L3.7,13.7 L2.3,12.3 L6.6,8 L2.3,3.7 Z"
+                            Height="14"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Width="14" />
+                    </Button>
+                </StackPanel>
+            </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+            <DataTemplate x:DataType="vm:FlashTabItemViewModel">
+                <ContentControl Content="{Binding Content}" />
+            </DataTemplate>
+        </TabControl.ContentTemplate>
+    </TabControl>
 </UserControl>

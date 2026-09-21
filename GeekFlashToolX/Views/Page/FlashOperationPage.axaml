@@ -1,0 +1,220 @@
+<UserControl
+    d:DesignHeight="760"
+    d:DesignWidth="1000"
+    mc:Ignorable="d"
+    x:Class="GeekFlashToolX.Views.Page.FlashOperationPage"
+    x:DataType="vm:FlashViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="using:GeekFlashToolX.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:GeekFlashToolX.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Styles>
+        <Style Selector="Border.flash-section">
+            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{StaticResource RadiusLg}" />
+            <Setter Property="Padding" Value="20" />
+        </Style>
+        <Style Selector="Border.flash-phone">
+            <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="BorderThickness" Value="3" />
+            <Setter Property="CornerRadius" Value="24" />
+        </Style>
+        <Style Selector="Border.flash-phone-screen">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="18" />
+        </Style>
+        <Style Selector="Border.tutorial-step">
+            <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+            <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
+            <Setter Property="Padding" Value="12" />
+        </Style>
+        <Style Selector="TextBlock.step-index">
+            <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+            <Setter Property="FontSize" Value="{StaticResource FontSizeXs}" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="Border.log-row">
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid
+        Margin="{StaticResource PaddingCard}"
+        RowDefinitions="Auto,*,Auto"
+        RowSpacing="{StaticResource Space3}">
+        <Grid Grid.Row="0">
+            <StackPanel Spacing="4">
+                <TextBlock Classes="h1" Text="设备联机与刷机" />
+                <TextBlock Classes="caption" Text="选择设备连接方式，并在此查看刷机过程与 USB 设备状态。" />
+            </StackPanel>
+        </Grid>
+
+        <Grid
+            ColumnDefinitions="0.72*,1.28*"
+            ColumnSpacing="16"
+            Grid.Row="1">
+            <Border Classes="flash-section">
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    Spacing="16"
+                    VerticalAlignment="Center">
+                    <Border
+                        Classes="flash-phone"
+                        Height="220"
+                        Padding="8"
+                        Width="132">
+                        <Border Classes="flash-phone-screen">
+                            <Grid RowDefinitions="Auto,*,Auto">
+                                <Border
+                                    Background="{DynamicResource TextMutedBrush}"
+                                    CornerRadius="2"
+                                    Height="4"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,10,0,0"
+                                    Width="30" />
+                                <Border
+                                    Background="{DynamicResource AccentMutedBrush}"
+                                    CornerRadius="40"
+                                    Grid.Row="1"
+                                    Height="80"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Width="80">
+                                    <PathIcon
+                                        Data="M15,1 L5,13 H11 L8,23 19,9 H13 Z"
+                                        Foreground="{DynamicResource AccentTextBrush}"
+                                        Height="48"
+                                        Width="48" />
+                                </Border>
+                                <Border
+                                    Background="{DynamicResource TextMutedBrush}"
+                                    CornerRadius="3"
+                                    Grid.Row="2"
+                                    Height="6"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,9"
+                                    Width="6" />
+                            </Grid>
+                        </Border>
+                    </Border>
+                    <StackPanel HorizontalAlignment="Center" Spacing="4">
+                        <TextBlock
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            HorizontalAlignment="Center"
+                            Text="等待设备接入" />
+                        <TextBlock
+                            Classes="caption"
+                            HorizontalAlignment="Center"
+                            Text="设备接入后会自动识别设备协议并进行联机"
+                            TextAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="flash-section" Grid.Column="1">
+                <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12">
+                    <StackPanel Spacing="3">
+                        <TextBlock Classes="h2" Text="联机教程" />
+                        <TextBlock Classes="caption" Text="选择当前设备模式查看示例步骤" />
+                    </StackPanel>
+                    <ComboBox
+                        Grid.Row="1"
+                        ItemsSource="{Binding TutorialModes}"
+                        SelectedItem="{Binding SelectedTutorial}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ConnectionTutorial">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <StackPanel Grid.Row="2" Spacing="12">
+                        <TextBlock
+                            Classes="caption"
+                            Text="{Binding SelectedTutorial.Description}"
+                            TextWrapping="Wrap" />
+                        <ItemsControl ItemsSource="{Binding SelectedTutorial.Steps}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TutorialStep">
+                                    <Border Classes="tutorial-step">
+                                        <Grid ColumnDefinitions="32,*" ColumnSpacing="8">
+                                            <TextBlock Classes="step-index" Text="{Binding Index}" />
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding Title}" />
+                                                <TextBlock Classes="caption" Text="{Binding Hint}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Border Classes="flash-section" Grid.Row="2">
+            <Grid ColumnDefinitions="1.05*,1.4*" ColumnSpacing="28">
+                <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="3">
+                            <TextBlock Classes="h2" Text="USB 热插拔监听" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Classes="caption" Text="{Binding MonitoringStatus}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <ToggleSwitch
+                            AutomationProperties.Name="切换 USB 热插拔监听"
+                            Grid.Column="1"
+                            IsChecked="{Binding IsUsbMonitoring}"
+                            IsEnabled="{Binding CanToggleMonitoring}"
+                            OffContent=""
+                            OnContent=""
+                            VerticalAlignment="Center" />
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Spacing="10">
+                    <TextBlock FontWeight="SemiBold" Text="手动选择设备" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <controls:SelectBox
+                            DisplayMemberPath="Label"
+                            DropDownOpened="OnDeviceDropDownOpened"
+                            Items="{Binding FilteredDevices}"
+                            SearchText="{Binding DeviceKeyword}"
+                            SelectedItem="{Binding SelectedDevice}"
+                            x:Name="SelectBox">
+                            <controls:SelectBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:FlashUsbDevice">
+                                    <TextBlock Text="{Binding Label}" />
+                                </DataTemplate>
+                            </controls:SelectBox.ItemTemplate>
+                        </controls:SelectBox>
+                        <Button
+                            Classes="primary"
+                            Click="OnConnectDevice"
+                            Content="连接设备"
+                            Grid.Column="1"
+                            IsEnabled="{Binding CanConnectSelectedDevice}"
+                            Padding="20,10" />
+                    </Grid>
+                    <TextBlock Classes="caption" Text="{Binding DeviceListStatus}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

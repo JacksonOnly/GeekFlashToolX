@@ -49,5 +49,8 @@
     <ItemGroup>
         <ProjectReference Include="..\GeekFlashToolX.Core\GeekFlashToolX.Core.csproj" />
         <ProjectReference Include="..\GeekFlashToolX.Services\GeekFlashToolX.Services.csproj" />
+        <ProjectReference Include="..\externals\core\src\GeekFlashCore.UsbWatcher\GeekFlashCore.UsbWatcher.csproj" />
+        <ProjectReference Include="..\externals\core\src\GeekFlashCore.Protocol.Qcom\GeekFlashCore.Protocol.Qcom.csproj" />
+        <ProjectReference Include="..\externals\core\src\GeekFlashCore.Transport.SerialPort\GeekFlashCore.Transport.SerialPort.csproj" />
     </ItemGroup>
 </Project>

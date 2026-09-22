@@ -289,14 +289,12 @@ public sealed partial class FlashViewModel : ViewModelBase
         base.Dispose();
     }
 
-    private bool CanConnect() => !_disposed && _ui is not null && SelectedDevice is { IsSupported: true } selected &&
-        string.Equals(DeviceKeyword, selected.Label, StringComparison.Ordinal);
+    private bool CanConnect() => !_disposed && SelectedDevice is not null;
 
     [RelayCommand(CanExecute = nameof(CanConnect))]
     private async Task ConnectSelectedDeviceAsync()
     {
-        if (_ui is null) return;
-        var protocol = await _ui.SelectProtocolAsync();
+        var protocol = _ui is null ? "Qualcomm" : await _ui.SelectProtocolAsync();
         if (protocol is not null) OpenSelectedDevice(protocol);
     }
 
@@ -307,13 +305,13 @@ public sealed partial class FlashViewModel : ViewModelBase
     {
         Dispatcher.UIThread.VerifyAccess();
         if (!string.Equals(protocol, "Qualcomm", StringComparison.Ordinal)) return;
-        if (SelectedDevice is not { IsSupported: true } selected)
+        if (SelectedDevice is not { } selected)
         {
-            DeviceListStatus = "请选择支持连接的 Qualcomm EDL 设备";
+            DeviceListStatus = "请先选择设备";
             return;
         }
         _dismissedDeviceIds.Remove(selected.Info.HardwareId!);
-        foreach (var rule in _rules) AddDevicePage(selected.Info, rule);
+        foreach (var rule in _rules) AddDevicePage(selected.Info, rule, force: true);
         var key = (selected.Info.HardwareId!.ToUpperInvariant(), "qcom-edl");
         if (_deviceTabs.TryGetValue(key, out var tab)) SelectedTab = tab;
     }
@@ -412,10 +410,10 @@ public sealed partial class FlashViewModel : ViewModelBase
     private static bool SameDevice(UsbDeviceInfo first, UsbDeviceInfo second) =>
         string.Equals(first.HardwareId, second.HardwareId, StringComparison.OrdinalIgnoreCase);
 
-    private FlashTabItemViewModel? AddDevicePage(UsbDeviceInfo device, DevicePageRule rule)
+    private FlashTabItemViewModel? AddDevicePage(UsbDeviceInfo device, DevicePageRule rule, bool force = false)
     {
         var id = device.HardwareId;
-        if (string.IsNullOrWhiteSpace(id) || _dismissedDeviceIds.Contains(id) || !rule.Supports(device)) return null;
+        if (string.IsNullOrWhiteSpace(id) || _dismissedDeviceIds.Contains(id) || (!force && !rule.Supports(device))) return null;
         var key = (id.ToUpperInvariant(), rule.Id);
         if (_deviceTabs.ContainsKey(key)) return null;
         var tab = new FlashTabItemViewModel(rule.Title(device), rule.CreateViewModel(device),

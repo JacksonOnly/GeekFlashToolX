@@ -7,7 +7,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using CommunityToolkit.Mvvm.Input;
 
 namespace GeekFlashToolX.Controls;
 
@@ -37,7 +36,6 @@ public partial class SelectBox : UserControl
     public SelectBox()
     {
         InitializeComponent();
-        SelectItemCommand = new RelayCommand<object?>(SelectItem);
         DropDown.PlacementTarget = SearchTextBox;
         SearchTextBox.SizeChanged += (_, _) => MatchDropDownWidth();
         ItemList.ItemsSource = Items;
@@ -50,7 +48,6 @@ public partial class SelectBox : UserControl
     public IDataTemplate? ItemTemplate { get => GetValue(ItemTemplateProperty); set => SetValue(ItemTemplateProperty, value); }
     public string DisplayMemberPath { get => GetValue(DisplayMemberPathProperty); set => SetValue(DisplayMemberPathProperty, value); }
     public string PlaceholderText { get => GetValue(PlaceholderTextProperty); set => SetValue(PlaceholderTextProperty, value); }
-    public IRelayCommand<object?> SelectItemCommand { get; }
     public event EventHandler? DropDownOpened;
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -98,6 +95,11 @@ public partial class SelectBox : UserControl
         {
             Dispatcher.UIThread.Post(() => _suppressPopupReopen = false, DispatcherPriority.Input);
         }
+    }
+
+    private void OnItemClicked(object? sender, RoutedEventArgs args)
+    {
+        if (sender is Button { DataContext: { } item }) SelectItem(item);
     }
 
     private void ResetSelectionForNewSearch()

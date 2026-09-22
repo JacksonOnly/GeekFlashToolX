@@ -46,9 +46,7 @@
                     <ItemsControl x:Name="ItemList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Button Classes="select-option"
-                                        Command="{Binding SelectItemCommand, ElementName=Root}"
-                                        CommandParameter="{Binding}">
+                                <Button Classes="select-option" Click="OnItemClicked">
                                     <ContentControl Content="{Binding}" ContentTemplate="{Binding ItemTemplate, ElementName=Root}" />
                                 </Button>
                             </DataTemplate>

@@ -16,11 +16,13 @@ using GeekFlashCore.UsbWatcher;
 using GeekFlashToolX.Diagnostics;
 using Serilog;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("GeekFlashToolX.Tests")]
+
 namespace GeekFlashToolX;
 
 public partial class App : Application
 {
-    internal static IServiceProvider? Services { get; private set; }
+    internal static IServiceProvider? Services { get; set; }
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);

@@ -17,11 +17,11 @@ public sealed class SerilogLogArchive : ILogArchive
     private readonly object _gate = new();
     private bool _disposed;
 
-    public SerilogLogArchive(string logDirectory, ILogger logger)
+    public SerilogLogArchive(string logDirectory, ILogger? logger = null)
     {
         LogDirectory = Path.GetFullPath(logDirectory);
         Directory.CreateDirectory(LogDirectory);
-        _logger = logger;
+        _logger = logger ?? Log.Logger;
     }
 
     public string LogDirectory { get; }

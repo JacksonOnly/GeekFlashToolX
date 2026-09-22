@@ -12,7 +12,7 @@
             <TextBlock Classes="body logs-subtitle" Text="{I18 Logs.Subtitle}" />
         </StackPanel>
         <Border Classes="settings-file-panel" Grid.Row="1">
-            <Grid RowDefinitions="Auto,Auto" RowSpacing="{StaticResource Space3}">
+            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="{StaticResource Space3}">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource Space4}">
                     <TextBlock
                         Classes="h2"
@@ -22,6 +22,11 @@
                         Grid.Column="1"
                         Orientation="Horizontal"
                         Spacing="{StaticResource Space2}">
+                        <Button
+                            AutomationProperties.Name="{I18 Logs.ViewDetail}"
+                            Command="{Binding PreviewSelectedCommand}"
+                            Content="{I18 Logs.ViewDetail}"
+                            IsEnabled="{Binding !IsEmpty}" />
                         <Button
                             AutomationProperties.Name="{I18 Logs.Folder}"
                             Command="{Binding OpenFolderCommand}"
@@ -50,8 +55,37 @@
                         </Button>
                     </StackPanel>
                 </Grid>
+                <Grid ColumnDefinitions="150,*,*,Auto" ColumnSpacing="{StaticResource Space3}" Grid.Row="2">
+                    <ComboBox
+                        AutomationProperties.Name="{I18 Logs.Period}"
+                        ItemsSource="{Binding PeriodOptions}"
+                        SelectedItem="{Binding SelectedPeriod}"
+                        x:Name="LogPeriodFilter">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LogPeriodOption">
+                                <TextBlock Text="{I18 {Binding NameKey}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <CalendarDatePicker
+                        AutomationProperties.Name="{I18 Logs.StartDate}"
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        SelectedDate="{Binding StartDate}"
+                        PlaceholderText="{I18 Logs.StartDate}" />
+                    <CalendarDatePicker
+                        AutomationProperties.Name="{I18 Logs.EndDate}"
+                        Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        SelectedDate="{Binding EndDate}"
+                        PlaceholderText="{I18 Logs.EndDate}" />
+                    <Button
+                        Command="{Binding ClearFiltersCommand}"
+                        Content="{I18 Logs.ClearFilters}"
+                        Grid.Column="3" />
+                </Grid>
                 <Grid
-                    ColumnDefinitions="*,150,150"
+                    ColumnDefinitions="*,170,150"
                     ColumnSpacing="{StaticResource Space3}"
                     Grid.Row="1">
                     <TextBox
@@ -60,25 +94,25 @@
                         Text="{Binding Search}"
                         x:Name="LogSearch" />
                     <ComboBox
-                        AutomationProperties.Name="{I18 Logs.Status}"
+                        AutomationProperties.Name="{I18 Logs.Source}"
                         Grid.Column="1"
-                        ItemsSource="{Binding StatusOptions}"
-                        SelectedItem="{Binding SelectedStatus}"
-                        x:Name="LogStatusFilter">
+                        ItemsSource="{Binding SourceOptions}"
+                        SelectedItem="{Binding SelectedSource}">
                         <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="vm:LogFilterOption">
+                            <DataTemplate x:DataType="vm:LogSourceOption">
                                 <TextBlock Text="{I18 {Binding NameKey}}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <ComboBox
-                        AutomationProperties.Name="{I18 Logs.Period}"
+                        AutomationProperties.Name="{I18 Logs.Status}"
                         Grid.Column="2"
-                        ItemsSource="{Binding PeriodOptions}"
-                        SelectedItem="{Binding SelectedPeriod}"
-                        x:Name="LogPeriodFilter">
+                        IsEnabled="{Binding IsWorkHistory}"
+                        ItemsSource="{Binding StatusOptions}"
+                        SelectedItem="{Binding SelectedStatus}"
+                        x:Name="LogStatusFilter">
                         <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="vm:LogPeriodOption">
+                            <DataTemplate x:DataType="vm:LogFilterOption">
                                 <TextBlock Text="{I18 {Binding NameKey}}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
@@ -103,6 +137,11 @@
                     AutomationProperties.Name="{I18 Logs.Title}"
                     Source="{Binding Source}"
                     x:Name="WorkLogGrid" />
+                <ProgressBar
+                    Height="3"
+                    IsIndeterminate="True"
+                    IsVisible="{Binding IsBusy}"
+                    VerticalAlignment="Top" />
                 <TextBlock
                     Classes="caption"
                     HorizontalAlignment="Center"

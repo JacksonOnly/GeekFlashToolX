@@ -94,7 +94,7 @@
                     <Button
                         AutomationProperties.Name="{I18 Window.Minimize}"
                         Classes="title-button"
-                        Click="OnMinimize"
+                        Command="{Binding MinimizeCommand}"
                         ToolTip.Tip="{I18 Window.Minimize}"
                         x:Name="MinimizeButton">
                         <PathIcon
@@ -105,7 +105,7 @@
                     <Button
                         AutomationProperties.Name="{I18 Window.MaximizeRestore}"
                         Classes="title-button"
-                        Click="OnMaximize"
+                        Command="{Binding MaximizeCommand}"
                         ToolTip.Tip="{I18 Window.MaximizeRestore}"
                         x:Name="MaximizeButton">
                         <Panel Height="12" Width="12">
@@ -124,7 +124,7 @@
                     <Button
                         AutomationProperties.Name="{I18 Window.Close}"
                         Classes="title-button close"
-                        Click="OnClose"
+                        Command="{Binding CloseWindowCommand}"
                         ToolTip.Tip="{I18 Window.Close}"
                         x:Name="CloseButton">
                         <PathIcon

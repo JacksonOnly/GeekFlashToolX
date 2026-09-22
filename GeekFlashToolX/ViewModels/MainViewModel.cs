@@ -1,36 +1,40 @@
 using System.ComponentModel;
 using System.Reflection;
-using System.Windows.Input;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using GeekFlashToolX.Core.Services;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using GeekFlashToolX.Services;
 
 namespace GeekFlashToolX.ViewModels;
 
-public sealed class MainViewModel : ViewModelBase
+public sealed partial class MainViewModel : ViewModelBase
 {
     private readonly IAppSettingsService _settingsService;
     private readonly NavigationRegistry _navigation;
     private readonly SettingsViewModel _settings;
+    private readonly IUiInteractionService? _ui;
     private bool _disposed;
     private readonly IPageTransition _animatedPageTransition = new CrossFade(TimeSpan.FromMilliseconds(220));
     private readonly IPageTransition _instantPageTransition = new InstantPageTransition();
     private Control _currentPage;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToggleSidebarLabel))]
     private bool _isSidebarExpanded = true;
 
     public MainViewModel(
         ILocalizationService localization,
         IAppSettingsService settingsService,
-        NavigationRegistry navigation) : base(localization)
+        NavigationRegistry navigation,
+        IUiInteractionService? ui = null) : base(localization)
     {
         _settingsService = settingsService;
         _navigation = navigation;
         _settings = navigation.Page<SettingsViewModel>();
+        _ui = ui;
         _currentPage = navigation.Initial.View!;
-        NavigateToCommand = ReactiveCommand.Create<NavigationItem>(ActivateNavigationItem);
-        ToggleSidebarCommand = ReactiveCommand.Create(() => IsSidebarExpanded = !IsSidebarExpanded);
 
         _settings.PropertyChanged += OnSettingsPropertyChanged;
     }
@@ -39,20 +43,10 @@ public sealed class MainViewModel : ViewModelBase
     public string ToggleSidebarLabel => String(IsSidebarExpanded ? "Window.CollapseSidebar" : "Window.ExpandSidebar");
     public bool IsCompact { get; set; }
 
-    public bool IsSidebarExpanded
-    {
-        get => _isSidebarExpanded;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _isSidebarExpanded, value);
-            this.RaisePropertyChanged(nameof(ToggleSidebarLabel));
-        }
-    }
-
     public Control CurrentPage
     {
         get => _currentPage;
-        private set => this.RaiseAndSetIfChanged(ref _currentPage, value);
+        private set => SetProperty(ref _currentPage, value);
     }
 
     public IReadOnlyList<NavigationItem> NavigationItems => _navigation.AllItems;
@@ -64,12 +58,10 @@ public sealed class MainViewModel : ViewModelBase
         ? _animatedPageTransition
         : _instantPageTransition;
 
-    public ICommand NavigateToCommand { get; }
-    public ICommand ToggleSidebarCommand { get; }
-
-    private void ActivateNavigationItem(NavigationItem item)
+    [RelayCommand]
+    private void NavigateTo(NavigationItem? item)
     {
-        if (_disposed) return;
+        if (_disposed || item is null) return;
         if (item.HasChildren)
         {
             item.IsExpanded = !item.IsExpanded;
@@ -83,13 +75,23 @@ public sealed class MainViewModel : ViewModelBase
         if (IsCompact) IsSidebarExpanded = false;
     }
 
+    [RelayCommand]
+    private void ToggleSidebar() => IsSidebarExpanded = !IsSidebarExpanded;
+
+    [RelayCommand]
+    private void Minimize() => _ui?.MinimizeMainWindow();
+
+    [RelayCommand]
+    private void Maximize() => _ui?.ToggleMainWindowMaximize();
+
+    [RelayCommand]
+    private void CloseWindow() => _ui?.CloseMainWindow();
+
     public override void Dispose()
     {
         if (_disposed) return;
         _disposed = true;
         _settings.PropertyChanged -= OnSettingsPropertyChanged;
-        (NavigateToCommand as IDisposable)?.Dispose();
-        (ToggleSidebarCommand as IDisposable)?.Dispose();
         _navigation.Dispose();
         base.Dispose();
     }
@@ -98,8 +100,8 @@ public sealed class MainViewModel : ViewModelBase
     {
         if (args.PropertyName == nameof(SettingsViewModel.AnimationsEnabled))
         {
-            this.RaisePropertyChanged(nameof(PageTransition));
-            this.RaisePropertyChanged(nameof(AnimationsDisabled));
+            OnPropertyChanged(nameof(PageTransition));
+            OnPropertyChanged(nameof(AnimationsDisabled));
         }
     }
 

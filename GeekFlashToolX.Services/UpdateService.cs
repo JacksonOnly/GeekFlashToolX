@@ -5,11 +5,13 @@ using GeekFlashToolX.Core.Models;
 using GeekFlashToolX.Core.Services;
 using GeekFlashToolX.Services.Serialization;
 using NuGet.Versioning;
+using Serilog;
+using Serilog.Events;
 
 namespace GeekFlashToolX.Services;
 
 public sealed class UpdateService(HttpClient httpClient, IAppSettingsService settings,
-    ILocalizationService localization, ILogService logs, string currentVersion) : IUpdateService
+    ILocalizationService localization, ILogArchive logs, string currentVersion) : IUpdateService
 {
     public async Task<UpdateCheckResult> CheckAsync(CancellationToken cancellationToken = default)
     {
@@ -20,13 +22,13 @@ public sealed class UpdateService(HttpClient httpClient, IAppSettingsService set
             var repo = new Uri(localization.String("GIT_REPO_URL").TrimEnd('/') + "/", UriKind.Absolute);
             if (repo.Scheme != Uri.UriSchemeHttps) throw new InvalidDataException("Repository URL must use HTTPS.");
             var manifestUri = new Uri(repo, "releases/latest/download/latest.json");
-            operation.Write(WorkLogLevel.Information, $"GET {manifestUri}");
+            operation.Write(LogEventLevel.Information, $"GET {manifestUri}");
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeout.CancelAfter(TimeSpan.FromSeconds(15));
             using var response = await httpClient.GetAsync(manifestUri, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
-                operation.Write(WorkLogLevel.Information, "404: latest.json not published; skipping update check.");
+                operation.Write(LogEventLevel.Information, "404: latest.json not published; skipping update check.");
                 operation.Complete();
                 return new(UpdateCheckStatus.NotFound);
             }
@@ -46,7 +48,7 @@ public sealed class UpdateService(HttpClient httpClient, IAppSettingsService set
                     ? UpdateCheckStatus.Ignored : UpdateCheckStatus.Available;
             var release = new Uri(repo, string.IsNullOrWhiteSpace(manifest.ReleaseTag)
                 ? "releases" : "releases/tag/" + Uri.EscapeDataString(manifest.ReleaseTag));
-            operation.Write(WorkLogLevel.Information, $"Update {manifest.Version}: {status}; installed {currentVersion}.");
+            operation.Write(LogEventLevel.Information, $"Update {manifest.Version}: {status}; installed {currentVersion}.");
             operation.Complete();
             return new(status, manifest, release);
         }
@@ -57,7 +59,7 @@ public sealed class UpdateService(HttpClient httpClient, IAppSettingsService set
         }
         catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or JsonException or OperationCanceledException or UriFormatException or InvalidOperationException)
         {
-            operation.Write(WorkLogLevel.Warning, "Update check failed; application continues.", ex);
+            operation.Write(LogEventLevel.Warning, "Update check failed; application continues.", ex);
             operation.Complete(WorkLogStatus.Failed);
             return new(UpdateCheckStatus.Failed);
         }
@@ -70,7 +72,7 @@ public sealed class UpdateService(HttpClient httpClient, IAppSettingsService set
         settings.Current.IgnoredUpdateVersion = parsed!.ToNormalizedString();
         try { await settings.SaveAsync(cancellationToken).ConfigureAwait(false); }
         catch { settings.Current.IgnoredUpdateVersion = previous; throw; }
-        logs.Write(WorkLogLevel.Information, $"Ignored update version {version}.");
+        Log.Information("Ignored update version {Version}.", version);
     }
 
     private static bool TryVersion(string? text, out NuGetVersion? version) =>

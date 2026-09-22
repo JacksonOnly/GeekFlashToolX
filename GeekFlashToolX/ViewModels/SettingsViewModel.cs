@@ -1,12 +1,13 @@
 using System.Collections.ObjectModel;
 using GeekFlashToolX.Core.Models;
 using GeekFlashToolX.Core.Services;
-using ReactiveUI;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using GeekFlashToolX.Services;
 
 namespace GeekFlashToolX.ViewModels;
 
-public sealed class SettingsViewModel : ViewModelBase
+public sealed partial class SettingsViewModel : ViewModelBase
 {
     private readonly IAppSettingsService _settingsService;
     private readonly ILocalizationService _localization;
@@ -14,19 +15,26 @@ public sealed class SettingsViewModel : ViewModelBase
     private ThemeOption? _selectedTheme;
     private LanguageOption? _selectedLanguage;
     private AccentOption? _selectedAccent;
-    private bool _animationsEnabled;
-    private bool _autoCheckUpdates;
+    [ObservableProperty] private bool _animationsEnabled;
+    [ObservableProperty] private bool _autoCheckUpdates;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CheckUpdatesKey))]
     private bool _isCheckingUpdates;
+    private readonly IUpdateCoordinator _updateCoordinator;
+    private readonly IUiInteractionService? _ui;
 
     public SettingsViewModel(
         IAppSettingsService settingsService,
         ILocalizationService localization,
         IAppearanceService appearanceService,
-        IUpdateCoordinator updateCoordinator) : base(localization)
+        IUpdateCoordinator updateCoordinator,
+        IUiInteractionService? ui = null) : base(localization)
     {
         _settingsService = settingsService;
         _localization = localization;
         _appearanceService = appearanceService;
+        _updateCoordinator = updateCoordinator;
+        _ui = ui;
         ThemeOptions = new ObservableCollection<ThemeOption>();
         Languages = new ObservableCollection<LanguageOption>(localization.AvailableLanguages);
         AccentOptions = new ObservableCollection<AccentOption>();
@@ -40,39 +48,28 @@ public sealed class SettingsViewModel : ViewModelBase
                           AccentOptions[0];
         _animationsEnabled = settingsService.Current.AnimationsEnabled;
         _autoCheckUpdates = settingsService.Current.AutoCheckUpdates;
-        CheckUpdatesCommand = ReactiveCommand.CreateFromTask(async () =>
-        {
-            IsCheckingUpdates = true;
-            try { await updateCoordinator.CheckAndNotifyAsync(); }
-            finally { IsCheckingUpdates = false; }
-        });
     }
 
     public string SettingsPath => _settingsService.SettingsFilePath;
+    [RelayCommand]
+    private Task CopySettingsPathAsync() => _ui?.CopyTextAsync(SettingsPath) ?? Task.CompletedTask;
     public string CheckUpdatesKey => IsCheckingUpdates ? "Update.Checking" : "Update.CheckTitle";
-    public ICommand CheckUpdatesCommand { get; }
-
-    public bool IsCheckingUpdates
+    [RelayCommand]
+    private async Task CheckUpdatesAsync()
     {
-        get => _isCheckingUpdates;
-        private set
-        {
-            this.RaiseAndSetIfChanged(ref _isCheckingUpdates, value);
-            this.RaisePropertyChanged(nameof(CheckUpdatesKey));
-        }
+        IsCheckingUpdates = true;
+        try { await _updateCoordinator.CheckAndNotifyAsync(); }
+        finally { IsCheckingUpdates = false; }
     }
 
-    public bool AutoCheckUpdates
+    partial void OnAutoCheckUpdatesChanged(bool value)
     {
-        get => _autoCheckUpdates;
-        set
-        {
-            if (_autoCheckUpdates == value) return;
-            this.RaiseAndSetIfChanged(ref _autoCheckUpdates, value);
-            _settingsService.Current.AutoCheckUpdates = value;
-            _ = SaveSafelyAsync();
-        }
+        _settingsService.Current.AutoCheckUpdates = value;
+        _ = SaveSafelyAsync();
     }
+
+    partial void OnAnimationsEnabledChanging(bool value) => _settingsService.Current.AnimationsEnabled = value;
+    partial void OnAnimationsEnabledChanged(bool value) => _ = SaveSafelyAsync();
 
     public ObservableCollection<ThemeOption> ThemeOptions { get; }
     public ObservableCollection<LanguageOption> Languages { get; }
@@ -84,7 +81,7 @@ public sealed class SettingsViewModel : ViewModelBase
         set
         {
             if (Equals(_selectedTheme, value) || value is null) return;
-            this.RaiseAndSetIfChanged(ref _selectedTheme, value);
+            SetProperty(ref _selectedTheme, value);
             _settingsService.Current.Theme = value.Value;
             ApplyAndSave();
         }
@@ -96,7 +93,7 @@ public sealed class SettingsViewModel : ViewModelBase
         set
         {
             if (Equals(_selectedLanguage, value) || value is null) return;
-            this.RaiseAndSetIfChanged(ref _selectedLanguage, value);
+            SetProperty(ref _selectedLanguage, value);
             _ = ChangeLanguageAsync(value.Code);
         }
     }
@@ -107,21 +104,9 @@ public sealed class SettingsViewModel : ViewModelBase
         set
         {
             if (Equals(_selectedAccent, value) || value is null) return;
-            this.RaiseAndSetIfChanged(ref _selectedAccent, value);
+            SetProperty(ref _selectedAccent, value);
             _settingsService.Current.AccentColor = value.Hex;
             ApplyAndSave();
-        }
-    }
-
-    public bool AnimationsEnabled
-    {
-        get => _animationsEnabled;
-        set
-        {
-            if (_animationsEnabled == value) return;
-            _settingsService.Current.AnimationsEnabled = value;
-            this.RaiseAndSetIfChanged(ref _animationsEnabled, value);
-            _ = SaveSafelyAsync();
         }
     }
 
@@ -147,7 +132,7 @@ public sealed class SettingsViewModel : ViewModelBase
         AccentOptions.Add(new AccentOption("#06B6D4", String("Accent.Cyan")));
         AccentOptions.Add(new AccentOption("#8B5CF6", String("Accent.Violet")));
         _selectedAccent = AccentOptions.FirstOrDefault(item => item.Hex == selectedHex) ?? AccentOptions[0];
-        this.RaisePropertyChanged(nameof(SelectedAccent));
+        OnPropertyChanged(nameof(SelectedAccent));
     }
 
     private void RebuildThemeOptions()
@@ -158,7 +143,7 @@ public sealed class SettingsViewModel : ViewModelBase
         ThemeOptions.Add(new ThemeOption(ThemeMode.Light, String("Theme.Light")));
         ThemeOptions.Add(new ThemeOption(ThemeMode.Dark, String("Theme.Dark")));
         _selectedTheme = ThemeOptions.First(item => item.Value == selectedValue);
-        this.RaisePropertyChanged(nameof(SelectedTheme));
+        OnPropertyChanged(nameof(SelectedTheme));
     }
 
     private void ApplyAndSave()

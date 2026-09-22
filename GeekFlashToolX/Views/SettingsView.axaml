@@ -156,7 +156,7 @@
                         <Button
                             AutomationProperties.Name="{I18 Settings.CopyPath}"
                             Classes="icon-button"
-                            Click="OnCopySettingsPath"
+                            Command="{Binding CopySettingsPathCommand}"
                             Grid.Column="1"
                             ToolTip.Tip="{I18 Settings.CopyPath}">
                             <iconPacks:PackIconCodicons

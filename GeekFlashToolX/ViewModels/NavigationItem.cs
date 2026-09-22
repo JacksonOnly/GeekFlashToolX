@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using GeekFlashToolX.Core.Services;
 using IconPacks.Avalonia.Codicons;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace GeekFlashToolX.ViewModels;
 
@@ -16,11 +16,11 @@ internal sealed record NavigationRegistration(
     bool IsExpanded);
 
 /// <summary>A page or expandable group displayed in the navigation sidebar.</summary>
-public sealed class NavigationItem : ViewModelBase
+public sealed partial class NavigationItem : ViewModelBase
 {
     private bool _isSelected;
     private bool _isActive;
-    private bool _isExpanded;
+    [ObservableProperty] private bool _isExpanded;
 
     internal NavigationItem(
         ILocalizationService localization,
@@ -46,21 +46,7 @@ public sealed class NavigationItem : ViewModelBase
     public bool HasChildren => Children.Count > 0;
     public bool CanNavigate => View is not null;
 
-    public bool IsSelected
-    {
-        get => _isSelected;
-        internal set => this.RaiseAndSetIfChanged(ref _isSelected, value);
-    }
+    public bool IsSelected { get => _isSelected; internal set => SetProperty(ref _isSelected, value); }
+    public bool IsActive { get => _isActive; internal set => SetProperty(ref _isActive, value); }
 
-    public bool IsActive
-    {
-        get => _isActive;
-        internal set => this.RaiseAndSetIfChanged(ref _isActive, value);
-    }
-
-    public bool IsExpanded
-    {
-        get => _isExpanded;
-        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
-    }
 }

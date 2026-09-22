@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using GeekFlashToolX.Core.Services;
 
 namespace GeekFlashToolX.Services;
@@ -69,12 +70,12 @@ public sealed class MessageBoxService(Func<Window?> ownerProvider) : IMessageBox
             Content = content,
         };
         var primaryClicked = false;
-        primary.Click += (_, _) =>
+        primary.Command = new RelayCommand(() =>
         {
             primaryClicked = true;
             dialog.Close();
-        };
-        if (secondary is not null) secondary.Click += (_, _) => dialog.Close();
+        });
+        if (secondary is not null) secondary.Command = new RelayCommand(dialog.Close);
         using var registration = cancellationToken.Register(() => Dispatcher.UIThread.Post(dialog.Close));
         await dialog.ShowDialog(owner);
         cancellationToken.ThrowIfCancellationRequested();

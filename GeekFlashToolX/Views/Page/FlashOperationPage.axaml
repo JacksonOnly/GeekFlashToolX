@@ -190,7 +190,7 @@
 
                 <StackPanel Grid.Column="1" Spacing="10">
                     <TextBlock FontWeight="SemiBold" Text="手动选择设备" />
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                         <controls:SelectBox
                             DisplayMemberPath="Label"
                             DropDownOpened="OnDeviceDropDownOpened"
@@ -205,14 +205,20 @@
                             </controls:SelectBox.ItemTemplate>
                         </controls:SelectBox>
                         <Button
-                            Classes="primary"
-                            Click="OnConnectDevice"
-                            Content="连接设备"
+                            AutomationProperties.Name="刷新 USB 设备列表"
+                            Command="{Binding RefreshDeviceListCommand}"
+                            Content="刷新列表"
                             Grid.Column="1"
-                            IsEnabled="{Binding CanConnectSelectedDevice}"
+                            IsEnabled="{Binding !IsRefreshingDevices}" />
+                        <Button
+                            Classes="primary"
+                            Command="{Binding ConnectSelectedDeviceCommand}"
+                            Content="连接设备"
+                            Grid.Column="2"
                             Padding="20,10" />
                     </Grid>
                     <TextBlock Classes="caption" Text="{Binding DeviceListStatus}" />
+                    <TextBlock Classes="caption" Text="关闭热插拔监听后，展开设备列表或点击“刷新列表”仍可重新扫描。" TextWrapping="Wrap" />
                 </StackPanel>
             </Grid>
         </Border>

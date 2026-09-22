@@ -8,7 +8,8 @@ using GeekFlashCore.UsbWatcher.Extensions;
 using GeekFlashToolX.Core.Services;
 using GeekFlashToolX.Services;
 using GeekFlashToolX.Views.Page;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace GeekFlashToolX.ViewModels;
 
@@ -17,26 +18,29 @@ public sealed record FlashUsbDevice(UsbDeviceInfo Info, bool IsSupported)
     public string Label => Info.FriendlyName ?? Info.Description ?? Info.HardwareId ?? "USB 设备";
 }
 
-public sealed class FlashViewModel : ViewModelBase
+public sealed partial class FlashViewModel : ViewModelBase
 {
     private static readonly QcomDeviceIdentify QcomIdentify = new();
     private readonly IUsbDeviceMonitor? _monitor;
     private readonly IUsbDeviceEnumerator? _enumerator;
     private readonly IQcomDeviceConnector _connector;
+    private readonly IUiInteractionService? _ui;
     private readonly List<DevicePageRule> _rules = [];
     private readonly Dictionary<(string DeviceId, string RuleId), FlashTabItemViewModel> _deviceTabs = [];
     private readonly HashSet<string> _dismissedDeviceIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
     private readonly CancellationTokenSource _lifetime = new();
     private Task _monitorWork = Task.CompletedTask;
-    private FlashTabItemViewModel? _selectedTab;
+    [ObservableProperty] private FlashTabItemViewModel? _selectedTab;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ConnectSelectedDeviceCommand))]
     private FlashUsbDevice? _selectedDevice;
-    private string _deviceKeyword = "";
-    private ConnectionTutorial? _selectedTutorial;
+    [ObservableProperty] private string _deviceKeyword = "";
+    [ObservableProperty] private ConnectionTutorial? _selectedTutorial;
     private bool _isUsbMonitoring;
-    private bool _isRefreshingDevices;
+    [ObservableProperty] private bool _isRefreshingDevices;
     private bool _isMonitoringBusy;
-    private string _deviceListStatus = "展开列表时扫描 USB 设备";
+    [ObservableProperty] private string _deviceListStatus = "等待 USB 设备接入";
     private string? _monitoringError;
     private int _deviceGeneration;
     private bool _disposed;
@@ -44,11 +48,13 @@ public sealed class FlashViewModel : ViewModelBase
     public FlashViewModel(ILocalizationService localization) : this(localization, null, null) { }
 
     public FlashViewModel(ILocalizationService localization, IUsbDeviceMonitor? monitor,
-        IUsbDeviceEnumerator? enumerator, IQcomDeviceConnector? connector = null) : base(localization)
+        IUsbDeviceEnumerator? enumerator, IQcomDeviceConnector? connector = null,
+        IUiInteractionService? ui = null) : base(localization)
     {
         _monitor = monitor;
         _enumerator = enumerator;
         _connector = connector ?? new QcomDeviceConnector();
+        _ui = ui;
         _isUsbMonitoring = monitor is not null;
         TutorialModes = CreateTutorials();
         _selectedTutorial = TutorialModes[0];
@@ -57,7 +63,7 @@ public sealed class FlashViewModel : ViewModelBase
         _selectedTab = mainTab;
         RegisterDevicePage<QcomDeviceConnectionViewModel, QcomDeviceConnectionView>(
             "qcom-edl", IsConnectable,
-            device => new QcomDeviceConnectionViewModel(device, _connector),
+            device => new QcomDeviceConnectionViewModel(device, _connector, _ui),
             device => $"EDL · {device.ExtractPortName()}");
 
         if (_monitor is not null)
@@ -71,31 +77,12 @@ public sealed class FlashViewModel : ViewModelBase
     public ObservableCollection<FlashUsbDevice> Devices { get; } = [];
     public ObservableCollection<FlashUsbDevice> FilteredDevices { get; } = [];
     public IReadOnlyList<ConnectionTutorial> TutorialModes { get; }
-    public FlashTabItemViewModel? SelectedTab { get => _selectedTab; set => this.RaiseAndSetIfChanged(ref _selectedTab, value); }
-    public FlashUsbDevice? SelectedDevice
+    partial void OnDeviceKeywordChanged(string value)
     {
-        get => _selectedDevice;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _selectedDevice, value);
-            this.RaisePropertyChanged(nameof(CanConnectSelectedDevice));
-        }
+        if (SelectedDevice is { } selected && !string.Equals(value, selected.Label, StringComparison.Ordinal))
+            SelectedDevice = null;
+        FilterDeviceList();
     }
-    public bool CanConnectSelectedDevice => SelectedDevice is { IsSupported: true } selected &&
-        string.Equals(DeviceKeyword, selected.Label, StringComparison.Ordinal);
-    public string DeviceKeyword
-    {
-        get => _deviceKeyword;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _deviceKeyword, value);
-            FilterDeviceList();
-            this.RaisePropertyChanged(nameof(CanConnectSelectedDevice));
-        }
-    }
-    public ConnectionTutorial? SelectedTutorial { get => _selectedTutorial; set => this.RaiseAndSetIfChanged(ref _selectedTutorial, value); }
-    public bool IsRefreshingDevices { get => _isRefreshingDevices; private set => this.RaiseAndSetIfChanged(ref _isRefreshingDevices, value); }
-    public string DeviceListStatus { get => _deviceListStatus; private set => this.RaiseAndSetIfChanged(ref _deviceListStatus, value); }
     public string MonitoringStatus => _monitoringError ?? (_isMonitoringBusy ? "切换中…" : _monitor?.IsMonitoring == true ? "监听中" : "已暂停");
     public bool CanToggleMonitoring => _monitor is not null;
 
@@ -105,7 +92,7 @@ public sealed class FlashViewModel : ViewModelBase
         set
         {
             if (_isUsbMonitoring == value) return;
-            this.RaiseAndSetIfChanged(ref _isUsbMonitoring, value);
+            SetProperty(ref _isUsbMonitoring, value);
             QueueMonitoringUpdate();
         }
     }
@@ -148,7 +135,7 @@ public sealed class FlashViewModel : ViewModelBase
         if (_monitor is null || _disposed) return;
         var requested = _isUsbMonitoring;
         _isMonitoringBusy = true;
-        this.RaisePropertyChanged(nameof(MonitoringStatus));
+        OnPropertyChanged(nameof(MonitoringStatus));
         try
         {
             await Task.Run(() =>
@@ -164,7 +151,7 @@ public sealed class FlashViewModel : ViewModelBase
         {
             if (_disposed) return;
             _monitoringError = exception.Message;
-            this.RaiseAndSetIfChanged(ref _isUsbMonitoring, _monitor.IsMonitoring, nameof(IsUsbMonitoring));
+            SetProperty(ref _isUsbMonitoring, _monitor.IsMonitoring);
             Serilog.Log.Warning(exception, "USB monitoring could not be changed.");
         }
         finally
@@ -172,7 +159,7 @@ public sealed class FlashViewModel : ViewModelBase
             if (!_disposed)
             {
                 _isMonitoringBusy = false;
-                this.RaisePropertyChanged(nameof(MonitoringStatus));
+                OnPropertyChanged(nameof(MonitoringStatus));
             }
         }
     }
@@ -199,8 +186,9 @@ public sealed class FlashViewModel : ViewModelBase
                 if (string.IsNullOrWhiteSpace(device.HardwareId)) continue;
                 ids.Add(device.HardwareId);
                 UpsertDevice(device);
-                foreach (var rule in _rules)
-                    if (AddDevicePage(device, rule) is { } tab && ReferenceEquals(SelectedTab, Tabs[0])) SelectedTab = tab;
+                if (IsUsbMonitoring)
+                    foreach (var rule in _rules)
+                        if (AddDevicePage(device, rule) is { } tab && ReferenceEquals(SelectedTab, Tabs[0])) SelectedTab = tab;
             }
             foreach (var old in Devices.Where(item => !ids.Contains(item.Info.HardwareId ?? "")).ToArray())
                 DeviceDisconnected(old.Info);
@@ -247,7 +235,11 @@ public sealed class FlashViewModel : ViewModelBase
         var item = Devices.FirstOrDefault(item => SameDevice(item.Info, device));
         if (item is not null)
         {
-            if (ReferenceEquals(SelectedDevice, item)) SelectedDevice = null;
+            if (ReferenceEquals(SelectedDevice, item))
+            {
+                SelectedDevice = null;
+                DeviceKeyword = "";
+            }
             Devices.Remove(item);
         }
         FilterDeviceList();
@@ -297,7 +289,21 @@ public sealed class FlashViewModel : ViewModelBase
         base.Dispose();
     }
 
-    public void OpenSelectedDevice(string protocol)
+    private bool CanConnect() => !_disposed && _ui is not null && SelectedDevice is { IsSupported: true } selected &&
+        string.Equals(DeviceKeyword, selected.Label, StringComparison.Ordinal);
+
+    [RelayCommand(CanExecute = nameof(CanConnect))]
+    private async Task ConnectSelectedDeviceAsync()
+    {
+        if (_ui is null) return;
+        var protocol = await _ui.SelectProtocolAsync();
+        if (protocol is not null) OpenSelectedDevice(protocol);
+    }
+
+    [RelayCommand]
+    private Task RefreshDeviceListAsync() => RefreshDevicesAsync();
+
+    private void OpenSelectedDevice(string protocol)
     {
         Dispatcher.UIThread.VerifyAccess();
         if (!string.Equals(protocol, "Qualcomm", StringComparison.Ordinal)) return;
@@ -386,7 +392,11 @@ public sealed class FlashViewModel : ViewModelBase
         {
             var index = Devices.IndexOf(old);
             Devices[index] = item;
-            if (ReferenceEquals(SelectedDevice, old)) SelectedDevice = item;
+            if (ReferenceEquals(SelectedDevice, old))
+            {
+                DeviceKeyword = item.Label;
+                SelectedDevice = item;
+            }
         }
     }
 
@@ -408,7 +418,8 @@ public sealed class FlashViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(id) || _dismissedDeviceIds.Contains(id) || !rule.Supports(device)) return null;
         var key = (id.ToUpperInvariant(), rule.Id);
         if (_deviceTabs.ContainsKey(key)) return null;
-        var tab = new FlashTabItemViewModel(rule.Title(device), rule.CreateViewModel(device), isClosable: true);
+        var tab = new FlashTabItemViewModel(rule.Title(device), rule.CreateViewModel(device),
+            isClosable: true, close: CloseTabAsync);
         if (tab.Content is QcomDeviceConnectionViewModel qcom)
         {
             tab.CanClose = !qcom.IsBusy;
@@ -431,7 +442,7 @@ public sealed class FlashViewModel : ViewModelBase
     private void OnDeviceRemoved(object? sender, UsbDeviceEventArgs args) =>
         Dispatcher.UIThread.Post(() =>
         {
-            if (_disposed) return;
+            if (_disposed || !IsUsbMonitoring) return;
             try { DeviceDisconnected(args.Device); }
             catch (Exception exception) { Serilog.Log.Warning(exception, "Could not remove a USB device page."); }
         });
@@ -456,11 +467,20 @@ public sealed class FlashViewModel : ViewModelBase
         Func<UsbDeviceInfo, object> CreateViewModel, Func<UsbDeviceInfo, string> Title);
 }
 
-public sealed class FlashTabItemViewModel(string title, object content, bool isClosable = false) : ReactiveObject
+public sealed partial class FlashTabItemViewModel : ObservableObject
 {
-    private bool _canClose = true;
-    public string Title { get; } = title;
-    public object Content { get; } = content;
-    public bool IsClosable { get; } = isClosable;
-    public bool CanClose { get => _canClose; set => this.RaiseAndSetIfChanged(ref _canClose, value); }
+    [ObservableProperty] private bool _canClose = true;
+    public FlashTabItemViewModel(string title, object content, bool isClosable = false,
+        Func<FlashTabItemViewModel, Task>? close = null)
+    {
+        Title = title;
+        Content = content;
+        IsClosable = isClosable;
+        CloseCommand = new AsyncRelayCommand(() => close?.Invoke(this) ?? Task.CompletedTask);
+    }
+
+    public string Title { get; }
+    public object Content { get; }
+    public bool IsClosable { get; }
+    public IAsyncRelayCommand CloseCommand { get; }
 }

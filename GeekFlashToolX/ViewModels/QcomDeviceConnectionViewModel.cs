@@ -1,31 +1,36 @@
-using System.Windows.Input;
 using GeekFlashCore.UsbWatcher.Abstractions;
 using GeekFlashCore.UsbWatcher.Extensions;
 using GeekFlashToolX.Services;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace GeekFlashToolX.ViewModels;
 
 /// <summary>One connection session per detected EDL device.</summary>
-public sealed class QcomDeviceConnectionViewModel : ReactiveObject, IDisposable
+public sealed partial class QcomDeviceConnectionViewModel : ObservableObject, IDisposable
 {
     private readonly IQcomDeviceConnector _connector;
+    private readonly IUiInteractionService? _ui;
     private readonly CancellationTokenSource _lifetime = new();
     private readonly SemaphoreSlim _operationGate = new(1, 1);
     private IQcomDeviceSession? _session;
-    private string _loaderPath = "";
-    private string _status = "等待探测";
-    private string _details = "";
+    [ObservableProperty] private string _loaderPath = "";
+    [ObservableProperty] private string _status = "等待探测";
+    [ObservableProperty] private string _details = "";
+    [ObservableProperty] private string _connectionLog = "等待设备操作。";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanProbe))]
+    [NotifyPropertyChangedFor(nameof(CanConnect))]
+    [NotifyPropertyChangedFor(nameof(CanClose))]
     private bool _isBusy;
     private bool _disposed;
 
-    public QcomDeviceConnectionViewModel(UsbDeviceInfo device, IQcomDeviceConnector connector)
+    public QcomDeviceConnectionViewModel(UsbDeviceInfo device, IQcomDeviceConnector connector,
+        IUiInteractionService? ui = null)
     {
         Device = device;
         _connector = connector;
-        ProbeCommand = ReactiveCommand.CreateFromTask(ProbeAsync);
-        ConnectCommand = ReactiveCommand.CreateFromTask(ConnectAsync);
-        CloseCommand = ReactiveCommand.CreateFromTask(CloseAsync);
+        _ui = ui;
     }
 
     public UsbDeviceInfo Device { get; }
@@ -36,41 +41,39 @@ public sealed class QcomDeviceConnectionViewModel : ReactiveObject, IDisposable
     public bool CanProbe => !IsBusy && !IsConnected;
     public bool CanConnect => !IsBusy && !IsConnected;
     public bool CanClose => !IsBusy;
-    public bool IsBusy
-    {
-        get => _isBusy;
-        private set
-        {
-            this.RaiseAndSetIfChanged(ref _isBusy, value);
-            RaiseConnectionActionsChanged();
-        }
-    }
-    public string LoaderPath { get => _loaderPath; set => this.RaiseAndSetIfChanged(ref _loaderPath, value); }
-    public string Status { get => _status; private set => this.RaiseAndSetIfChanged(ref _status, value); }
-    public string Details { get => _details; private set => this.RaiseAndSetIfChanged(ref _details, value); }
-    public ICommand ProbeCommand { get; }
-    public ICommand ConnectCommand { get; }
-    public ICommand CloseCommand { get; }
     public event EventHandler? CloseRequested;
 
+    [RelayCommand]
+    private async Task BrowseLoaderAsync()
+    {
+        if (_ui is null) return;
+        if (await _ui.PickFirehoseLoaderAsync() is { } path) LoaderPath = path;
+    }
+
+    [RelayCommand]
     private async Task ProbeAsync() => await RunOperationAsync(async token =>
     {
         Status = "正在探测 Sahara…";
+        AppendLog("开始探测 Sahara 协议");
         var details = await _connector.ProbeAsync(Device, token);
         token.ThrowIfCancellationRequested();
         Details = details;
         Status = "探测完成";
+        AppendLog($"探测完成：{details}");
     });
 
+    [RelayCommand]
     private async Task ConnectAsync() => await RunOperationAsync(async token =>
     {
         if (_session is not null) return;
         if (string.IsNullOrWhiteSpace(LoaderPath))
         {
             Status = "请先选择匹配设备的 Firehose Loader";
+            AppendLog(Status);
             return;
         }
         Status = "正在建立 EDL 联机…";
+        AppendLog("正在通过 Sahara 加载 Firehose Loader");
         var session = await _connector.ConnectAsync(Device, LoaderPath, token);
         if (_disposed || token.IsCancellationRequested)
         {
@@ -80,7 +83,8 @@ public sealed class QcomDeviceConnectionViewModel : ReactiveObject, IDisposable
         _session = session;
         Details = _session.Summary;
         Status = "已连接";
-        this.RaisePropertyChanged(nameof(IsConnected));
+        AppendLog($"设备已连接：{_session.Summary}");
+        OnPropertyChanged(nameof(IsConnected));
         RaiseConnectionActionsChanged();
     });
 
@@ -89,13 +93,16 @@ public sealed class QcomDeviceConnectionViewModel : ReactiveObject, IDisposable
         var session = _session;
         if (session is null) return;
         _session = null;
-        this.RaisePropertyChanged(nameof(IsConnected));
+        OnPropertyChanged(nameof(IsConnected));
         RaiseConnectionActionsChanged();
         Status = "正在断开…";
+        AppendLog(Status);
         await session.DisconnectAsync(token);
         Status = "已断开";
+        AppendLog(Status);
     });
 
+    [RelayCommand]
     public async Task CloseAsync()
     {
         if (_disposed || IsBusy) return;
@@ -113,6 +120,7 @@ public sealed class QcomDeviceConnectionViewModel : ReactiveObject, IDisposable
         {
             Status = "操作失败";
             Details = exception.Message;
+            AppendLog($"操作失败：{exception.Message}");
             Serilog.Log.Warning(exception, "EDL connection operation failed.");
         }
         finally
@@ -122,6 +130,9 @@ public sealed class QcomDeviceConnectionViewModel : ReactiveObject, IDisposable
             if (_disposed) ReleaseOperationResources();
         }
     }
+
+    private void AppendLog(string message) =>
+        ConnectionLog += $"{Environment.NewLine}[{DateTime.Now:HH:mm:ss}] {message}";
 
     public void Dispose()
     {
@@ -136,9 +147,6 @@ public sealed class QcomDeviceConnectionViewModel : ReactiveObject, IDisposable
                 catch (Exception exception) { Serilog.Log.Warning(exception, "EDL connection cleanup failed."); }
             });
         _session = null;
-        (ProbeCommand as IDisposable)?.Dispose();
-        (ConnectCommand as IDisposable)?.Dispose();
-        (CloseCommand as IDisposable)?.Dispose();
         if (!IsBusy) ReleaseOperationResources();
     }
 
@@ -150,8 +158,8 @@ public sealed class QcomDeviceConnectionViewModel : ReactiveObject, IDisposable
 
     private void RaiseConnectionActionsChanged()
     {
-        this.RaisePropertyChanged(nameof(CanProbe));
-        this.RaisePropertyChanged(nameof(CanConnect));
-        this.RaisePropertyChanged(nameof(CanClose));
+        OnPropertyChanged(nameof(CanProbe));
+        OnPropertyChanged(nameof(CanConnect));
+        OnPropertyChanged(nameof(CanClose));
     }
 }

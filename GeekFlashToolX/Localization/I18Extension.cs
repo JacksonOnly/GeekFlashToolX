@@ -5,7 +5,6 @@ using Avalonia.Data.Converters;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using GeekFlashToolX.Core.Services;
-using Splat;
 using System.Globalization;
 
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "GeekFlashToolX.Localization")]
@@ -38,7 +37,7 @@ public sealed class I18Extension
     {
         var key = Key;
         if (key is null) throw new ArgumentException("A translation key is required.", nameof(Key));
-        var localization = Locator.Current.GetService<ILocalizationService>();
+        var localization = App.Services?.GetService(typeof(ILocalizationService)) as ILocalizationService;
         if (localization is null && !Design.IsDesignMode)
             throw new InvalidOperationException("Register ILocalizationService before loading localized views.");
 

@@ -1,9 +1,10 @@
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using Avalonia.Controls;
 using GeekFlashToolX.Core.Models;
 using GeekFlashToolX.Core.Services;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using GeekFlashToolX.Services;
 
 namespace GeekFlashToolX.ViewModels;
 
@@ -15,6 +16,10 @@ public sealed record LogPeriodOption(int Days)
 {
     public string NameKey => $"Logs.Period{Days}";
 }
+public sealed record LogSourceOption(LogRecordKind Kind)
+{
+    public string NameKey => Kind == LogRecordKind.Work ? "Logs.WorkHistory" : "Logs.ApplicationLogs";
+}
 public sealed record LogRow(WorkLogInfo Info, string StatusText)
 {
     public string Title => Info.Title;
@@ -25,57 +30,68 @@ public sealed record LogRow(WorkLogInfo Info, string StatusText)
     public string Size => $"{Info.SizeBytes / 1024d:N1} KB";
 }
 
-public sealed class LogsViewModel : ViewModelBase
+public sealed partial class LogsViewModel : ViewModelBase
 {
-    private readonly ILogService _logs;
+    private readonly ILogArchive _logs;
     private readonly ILocalizationService _localization;
     private readonly IExternalLauncher _launcher;
+    private readonly IUiInteractionService? _ui;
     private readonly ObservableCollection<LogRow> _rows = [];
-    private string _search = "";
+    [ObservableProperty] private string _search = "";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasError))]
     private string _error = "";
-    private bool _busy;
+    [ObservableProperty] private bool _isBusy;
     private bool _disposed;
-    private LogFilterOption? _selectedStatus;
-    private LogPeriodOption? _selectedPeriod;
+    [ObservableProperty] private LogFilterOption? _selectedStatus;
+    [ObservableProperty] private LogPeriodOption? _selectedPeriod;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWorkHistory))]
+    private LogSourceOption? _selectedSource;
+    [ObservableProperty] private DateTime? _startDate;
+    [ObservableProperty] private DateTime? _endDate;
     private FlatTreeDataGridSource<LogRow> _source;
 
-    public LogsViewModel(ILocalizationService localization, ILogService logs, IExternalLauncher launcher) : base(localization)
+    public LogsViewModel(ILocalizationService localization, ILogArchive logs, IExternalLauncher launcher,
+        IUiInteractionService? ui = null) : base(localization)
     {
         _logs = logs;
         _localization = localization;
         _launcher = launcher;
+        _ui = ui;
+        SourceOptions.Add(new(LogRecordKind.Work));
+        SourceOptions.Add(new(LogRecordKind.Application));
+        _selectedSource = SourceOptions[0];
         RebuildOptions();
         _source = CreateSource();
-        RefreshCommand = ReactiveCommand.CreateFromTask(RefreshAsync);
-        OpenFolderCommand = ReactiveCommand.CreateFromTask(OpenFolderAsync);
     }
 
     public int Count => _rows.Count;
     public string LogDirectory => _logs.LogDirectory;
     public bool IsEmpty => _rows.Count == 0;
     public bool HasError => !string.IsNullOrEmpty(Error);
-    public string Error { get => _error; private set { this.RaiseAndSetIfChanged(ref _error, value); this.RaisePropertyChanged(nameof(HasError)); } }
-    public bool IsBusy { get => _busy; private set => this.RaiseAndSetIfChanged(ref _busy, value); }
-    public FlatTreeDataGridSource<LogRow> Source { get => _source; private set => this.RaiseAndSetIfChanged(ref _source, value); }
+    public bool IsWorkHistory => SelectedSource?.Kind == LogRecordKind.Work;
+    public FlatTreeDataGridSource<LogRow> Source { get => _source; private set => SetProperty(ref _source, value); }
     public ObservableCollection<LogFilterOption> StatusOptions { get; } = [];
     public ObservableCollection<LogPeriodOption> PeriodOptions { get; } = [];
-    public ICommand RefreshCommand { get; }
-    public ICommand OpenFolderCommand { get; }
-
-    public string Search
+    public ObservableCollection<LogSourceOption> SourceOptions { get; } = [];
+    partial void OnSearchChanged(string value) => _ = RefreshAsync();
+    partial void OnSelectedStatusChanged(LogFilterOption? value) => _ = RefreshAsync();
+    partial void OnSelectedPeriodChanged(LogPeriodOption? value)
     {
-        get => _search;
-        set { this.RaiseAndSetIfChanged(ref _search, value); _ = RefreshAsync(); }
+        if (value is { Days: > 0 }) { StartDate = null; EndDate = null; }
+        _ = RefreshAsync();
     }
-    public LogFilterOption? SelectedStatus
+    partial void OnSelectedSourceChanged(LogSourceOption? value) => _ = RefreshAsync();
+    partial void OnStartDateChanged(DateTime? value)
     {
-        get => _selectedStatus;
-        set { this.RaiseAndSetIfChanged(ref _selectedStatus, value); _ = RefreshAsync(); }
+        if (value is not null) SelectedPeriod = PeriodOptions[0];
+        _ = RefreshAsync();
     }
-    public LogPeriodOption? SelectedPeriod
+    partial void OnEndDateChanged(DateTime? value)
     {
-        get => _selectedPeriod;
-        set { this.RaiseAndSetIfChanged(ref _selectedPeriod, value); _ = RefreshAsync(); }
+        if (value is not null) SelectedPeriod = PeriodOptions[0];
+        _ = RefreshAsync();
     }
 
     private FlatTreeDataGridSource<LogRow> CreateSource()
@@ -92,9 +108,10 @@ public sealed class LogsViewModel : ViewModelBase
         return source;
     }
     
+    [RelayCommand]
     public async Task RefreshAsync()
     {
-        if (_busy || _disposed) return;
+        if (IsBusy || _disposed) return;
         IsBusy = true;
         try
         {
@@ -108,7 +125,8 @@ public sealed class LogsViewModel : ViewModelBase
             } while (!_disposed && query != CurrentQuery());
             if (_disposed) return;
             var selected = Source.RowSelection?.SelectedItem?.Info.Id;
-            var rows = logs.Select(log => new LogRow(log, String($"LogStatus.{log.Status}"))).ToArray();
+            var rows = logs.Select(log => new LogRow(log,
+                String(log.Kind == LogRecordKind.Application ? "Logs.ApplicationLogs" : $"LogStatus.{log.Status}"))).ToArray();
             if (!_rows.SequenceEqual(rows))
             {
                 _rows.Clear();
@@ -117,8 +135,8 @@ public sealed class LogsViewModel : ViewModelBase
                 if (_rows.Count > 0) Source.RowSelection!.SelectedIndex = Math.Max(0, index);
             }
             Error = _logs.LastError ?? "";
-            this.RaisePropertyChanged(nameof(IsEmpty));
-            this.RaisePropertyChanged(nameof(Count));
+            OnPropertyChanged(nameof(IsEmpty));
+            OnPropertyChanged(nameof(Count));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -127,11 +145,38 @@ public sealed class LogsViewModel : ViewModelBase
         finally { IsBusy = false; }
     }
 
-    private LogQuery CurrentQuery() => new(Search, SelectedStatus?.Value,
-        SelectedPeriod is { Days: > 0 } period ? DateTimeOffset.Now.Date.AddDays(1 - period.Days) : null);
+    private LogQuery CurrentQuery()
+    {
+        DateTimeOffset? from = StartDate is { } start ? new DateTimeOffset(start.Date) : null;
+        DateTimeOffset? to = EndDate is { } end ? new DateTimeOffset(end.Date.AddDays(1)) : null;
+        if (from is null && to is null && SelectedPeriod is { Days: > 0 } period)
+            from = DateTimeOffset.Now.Date.AddDays(1 - period.Days);
+        return new(Search, IsWorkHistory ? SelectedStatus?.Value : null,
+            from, to, SelectedSource?.Kind);
+    }
 
-    public LogPreviewViewModel CreatePreview(LogRow row) => new(_localization, _logs, _launcher, row.Info);
+    [RelayCommand]
+    private void ClearFilters()
+    {
+        Search = string.Empty;
+        SelectedStatus = StatusOptions[0];
+        SelectedPeriod = PeriodOptions[0];
+        StartDate = null;
+        EndDate = null;
+    }
 
+    [RelayCommand]
+    private Task PreviewSelectedAsync() => PreviewRowAsync(Source.RowSelection?.SelectedItem);
+
+    [RelayCommand]
+    private async Task PreviewRowAsync(LogRow? row)
+    {
+        if (row is null || _ui is null || _disposed) return;
+        using var preview = new LogPreviewViewModel(_localization, _logs, _launcher, row.Info, _ui);
+        await _ui.ShowLogPreviewAsync(preview);
+    }
+
+    [RelayCommand]
     private async Task OpenFolderAsync()
     {
         try { await _launcher.OpenFolderAsync(LogDirectory); }

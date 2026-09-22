@@ -54,7 +54,7 @@
                     <Button
                         AutomationProperties.Name="关闭设备页面"
                         Classes="title-button tab-close"
-                        Click="OnCloseTab"
+                        Command="{Binding CloseCommand}"
                         Height="26"
                         IsEnabled="{Binding CanClose}"
                         IsVisible="{Binding IsClosable}"

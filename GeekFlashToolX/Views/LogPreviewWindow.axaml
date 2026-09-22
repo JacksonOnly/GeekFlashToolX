@@ -13,19 +13,24 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid
         Margin="24"
-        RowDefinitions="Auto,*,Auto"
+        RowDefinitions="Auto,Auto,*,Auto"
         RowSpacing="{StaticResource Space4}">
-        <StackPanel Spacing="{StaticResource Space2}">
-            <TextBlock
-                Classes="h2"
-                Text="{Binding Title}"
-                TextTrimming="CharacterEllipsis" />
-            <TextBlock Classes="caption" Text="{I18 Logs.Preview}" />
-        </StackPanel>
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource Space3}">
+            <StackPanel Spacing="{StaticResource Space2}">
+                <TextBlock Classes="h2" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="caption" Text="{Binding Operation}" />
+                <TextBlock Classes="caption" Text="{Binding Device}" />
+            </StackPanel>
+            <Border Background="{Binding StatusBrush}" CornerRadius="6" Grid.Column="1"
+                    Padding="12,6" VerticalAlignment="Top">
+                <TextBlock Foreground="White" FontWeight="SemiBold" Text="{I18 {Binding StatusKey}}" />
+            </Border>
+        </Grid>
+        <ProgressBar Grid.Row="1" Height="4" IsIndeterminate="True" IsVisible="{Binding IsRunning}" />
         <Border
             Classes="settings-file-panel"
             ClipToBounds="True"
-            Grid.Row="1"
+            Grid.Row="2"
             Padding="16">
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <SelectableTextBlock
@@ -37,9 +42,9 @@
             </ScrollViewer>
         </Border>
         <Grid
-            ColumnDefinitions="*,Auto,Auto,Auto"
+            ColumnDefinitions="*,Auto,Auto,Auto,Auto"
             ColumnSpacing="{StaticResource Space2}"
-            Grid.Row="2">
+            Grid.Row="3">
             <SelectableTextBlock
                 AutomationProperties.Name="{Binding FilePath}"
                 Classes="caption mono"
@@ -49,24 +54,29 @@
                 ToolTip.Tip="{Binding FilePath}"
                 VerticalAlignment="Center" />
             <Button
-                Click="OnCopyPathClick"
-                Content="{I18 Logs.CopyPath}"
+                Command="{Binding CopyContentCommand}"
+                Content="{I18 Logs.CopyContent}"
                 Grid.Column="1"
+                MinWidth="96" />
+            <Button
+                Command="{Binding CopyPathCommand}"
+                Content="{I18 Logs.CopyPath}"
+                Grid.Column="2"
                 HorizontalAlignment="Right"
                 HorizontalContentAlignment="Center"
                 MinWidth="96" />
             <Button
                 Classes="primary"
-                Click="OnOpenFileClick"
+                Command="{Binding OpenFileFromPreviewCommand}"
                 Content="{I18 Logs.OpenFile}"
-                Grid.Column="2"
+                Grid.Column="3"
                 HorizontalAlignment="Right"
                 HorizontalContentAlignment="Center"
                 MinWidth="104" />
             <Button
-                Click="OnCloseClick"
+                Command="{Binding ClosePreviewCommand}"
                 Content="{I18 Window.Close}"
-                Grid.Column="3"
+                Grid.Column="4"
                 HorizontalAlignment="Right"
                 HorizontalContentAlignment="Center"
                 MinWidth="96" />

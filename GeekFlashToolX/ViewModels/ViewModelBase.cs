@@ -1,10 +1,10 @@
 using Avalonia.Threading;
 using GeekFlashToolX.Core.Services;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace GeekFlashToolX.ViewModels;
 
-public abstract class ViewModelBase : ReactiveObject, IDisposable
+public abstract class ViewModelBase : ObservableObject, IDisposable
 {
     private readonly ILocalizationService? _localization;
 
@@ -26,7 +26,7 @@ public abstract class ViewModelBase : ReactiveObject, IDisposable
 
     protected virtual void OnLanguageChanged()
     {
-        this.RaisePropertyChanged(string.Empty);
+        OnPropertyChanged(string.Empty);
     }
 
     private void OnCultureChanged(object? sender, EventArgs e)

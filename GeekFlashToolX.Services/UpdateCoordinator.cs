@@ -1,11 +1,12 @@
 using GeekFlashToolX.Core.Models;
 using GeekFlashToolX.Core.Services;
+using Serilog;
 
 namespace GeekFlashToolX.Services;
 
 /// <summary>Call on the UI thread after the main window is shown. Repeated checks never overlap dialogs.</summary>
 public sealed class UpdateCoordinator(IUpdateService updates, IAppSettingsService settings, IMessageBoxService messageBoxes,
-    IExternalLauncher launcher, ILocalizationService localization, ILogService logs,
+    IExternalLauncher launcher, ILocalizationService localization,
     INotifier notifier) : IUpdateCoordinator
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -54,7 +55,7 @@ public sealed class UpdateCoordinator(IUpdateService updates, IAppSettingsServic
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
         catch (Exception ex)
         {
-            logs.Write(WorkLogLevel.Error, "Update notification or user action failed.", ex);
+            Log.Error(ex, "Update notification or user action failed.");
             if (!automatic && !cancellationToken.IsCancellationRequested)
                 notifier.Show(localization.String("Update.CheckTitle"), localization.String("Update.Failed"), NotificationKind.Error);
         }

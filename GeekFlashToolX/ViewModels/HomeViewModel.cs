@@ -1,7 +1,7 @@
-using System.Windows.Input;
 using GeekFlashToolX.Core.Services;
 using IconPacks.Avalonia.Codicons;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace GeekFlashToolX.ViewModels;
 
@@ -16,35 +16,28 @@ public sealed record HomeLinkGroup(
     PackIconCodiconsKind Icon,
     IReadOnlyList<HomeLink> Links);
 
-public sealed class HomeViewModel : ViewModelBase
+public sealed partial class HomeViewModel : ViewModelBase
 {
     private readonly IExternalLauncher _launcher;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasError))]
     private string _error = string.Empty;
 
     public HomeViewModel(ILocalizationService localization, IExternalLauncher launcher) : base(localization)
     {
         _launcher = launcher;
         LinkGroups = CreateLinkGroups();
-        OpenLinkCommand = ReactiveCommand.CreateFromTask<Uri>(OpenLinkAsync);
     }
 
     public string CurrentVersion => $"v{typeof(HomeViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.0.0"}";
     public Uri RepositoryUrl => new(String("GIT_REPO_URL"));
     public IReadOnlyList<HomeLinkGroup> LinkGroups { get; private set; }
-    public ICommand OpenLinkCommand { get; }
-    public string Error
-    {
-        get => _error;
-        private set
-        {
-            this.RaiseAndSetIfChanged(ref _error, value);
-            this.RaisePropertyChanged(nameof(HasError));
-        }
-    }
     public bool HasError => !string.IsNullOrEmpty(Error);
 
-    private async Task OpenLinkAsync(Uri uri)
+    [RelayCommand]
+    private async Task OpenLinkAsync(Uri? uri)
     {
+        if (uri is null) return;
         Error = string.Empty;
         try { await _launcher.OpenUriAsync(uri); }
         catch (Exception ex) { Error = FormatString("Home.LinkError", ex.Message); }
@@ -84,7 +77,6 @@ public sealed class HomeViewModel : ViewModelBase
 
     public override void Dispose()
     {
-        (OpenLinkCommand as IDisposable)?.Dispose();
         base.Dispose();
     }
 }

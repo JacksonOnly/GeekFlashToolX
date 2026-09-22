@@ -1,26 +1,27 @@
 using System.Collections.Concurrent;
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using GeekFlashToolX.Core.Models;
 using GeekFlashToolX.Core.Services;
 using GeekFlashToolX.Services.Serialization;
+using Serilog;
+using Serilog.Events;
 
 namespace GeekFlashToolX.Services;
 
-/// <summary>Flushes each line; metadata is atomically replaced and never used as a file path.</summary>
-public sealed class FileLogService : ILogService
+/// <summary>Indexes operation logs for the UI. Serilog owns every log file writer.</summary>
+public sealed class SerilogLogArchive : ILogArchive
 {
     private readonly ConcurrentDictionary<string, OperationLog> _operations = new();
-    private readonly object _lifetimeGate = new();
-    private readonly OperationLog _application;
+    private readonly ILogger _logger;
+    private readonly object _gate = new();
     private bool _disposed;
 
-    public FileLogService(string? logDirectory = null)
+    public SerilogLogArchive(string logDirectory, ILogger logger)
     {
-        LogDirectory = Path.GetFullPath(logDirectory ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GeekFlashTool-X", "Logs"));
-        _application = CreateOperation("Application", "Application", null);
+        LogDirectory = Path.GetFullPath(logDirectory);
+        Directory.CreateDirectory(LogDirectory);
+        _logger = logger;
     }
 
     public string LogDirectory { get; }
@@ -30,32 +31,21 @@ public sealed class FileLogService : ILogService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
         ArgumentException.ThrowIfNullOrWhiteSpace(operation);
-        lock (_lifetimeGate)
+        lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            return CreateOperation(title, operation, device);
+            var started = DateTimeOffset.Now;
+            var id = $"{started:yyyyMMdd-HHmmss-fff}-{Guid.NewGuid():N}";
+            var info = new WorkLogInfo
+            {
+                Id = id, Title = title, Operation = operation, Device = device,
+                StartedAt = started, Status = WorkLogStatus.Running,
+                FilePath = Path.Combine(LogDirectory, id + ".log"),
+            };
+            var result = new OperationLog(this, info, _logger);
+            _operations[id] = result;
+            return result;
         }
-    }
-
-    private OperationLog CreateOperation(string title, string operation, string? device)
-    {
-        var started = DateTimeOffset.Now;
-        var id = $"{started:yyyyMMdd-HHmmss-fff}-{Guid.NewGuid():N}";
-        var log = new OperationLog(this, new WorkLogInfo
-        {
-            Id = id, Title = title, Operation = operation, Device = device,
-            StartedAt = started, Status = WorkLogStatus.Running,
-            FilePath = Path.Combine(LogDirectory, id + ".log"),
-        });
-        _operations[id] = log;
-        return log;
-    }
-
-    public void Write(WorkLogLevel level, string message, Exception? exception = null, string? operationId = null)
-    {
-        var target = operationId is not null && _operations.TryGetValue(operationId, out var operation)
-            ? operation : _application;
-        target.Write(level, message, exception);
     }
 
     public Task<IReadOnlyList<WorkLogInfo>> GetLogsAsync(LogQuery? query = null, CancellationToken cancellationToken = default)
@@ -78,23 +68,25 @@ public sealed class FileLogService : ILogService
                     }
                     catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
                     {
-                        // A missing/damaged sidecar must not hide an otherwise readable work log.
+                        RecordError(ex);
                     }
                     info ??= new WorkLogInfo
                     {
                         Id = Path.GetFileNameWithoutExtension(path), Title = Path.GetFileNameWithoutExtension(path),
-                        Operation = "Imported", StartedAt = file.CreationTimeUtc,
-                        EndedAt = file.LastWriteTimeUtc, Status = WorkLogStatus.Interrupted,
+                        Operation = "Application", StartedAt = file.CreationTimeUtc,
+                        EndedAt = file.LastWriteTimeUtc, Status = WorkLogStatus.Succeeded,
+                        Kind = LogRecordKind.Application,
                     };
                     info = info with { FilePath = path, SizeBytes = file.Length };
-                    // A running record from a previous process is interrupted, not successful.
-                    if (info.Status == WorkLogStatus.Running && !_operations.ContainsKey(info.Id) && !IsBeingWritten(path))
+                    if (info.Status == WorkLogStatus.Running && !_operations.ContainsKey(info.Id))
                         info = info with { Status = WorkLogStatus.Interrupted };
                     if (query?.Status is { } status && info.Status != status) continue;
+                    if (query?.Kind is { } kind && info.Kind != kind) continue;
                     if (query?.From is { } from && info.StartedAt < from) continue;
-                    if (query?.To is { } to && info.StartedAt > to) continue;
+                    if (query?.To is { } to && info.StartedAt >= to) continue;
                     if (!string.IsNullOrWhiteSpace(query?.Search) &&
-                        !$"{info.Title} {info.Operation} {info.Device} {Path.GetFileName(path)}".Contains(query.Search.Trim(), StringComparison.OrdinalIgnoreCase)) continue;
+                        !$"{info.Title} {info.Operation} {info.Device} {Path.GetFileName(path)}"
+                            .Contains(query.Search.Trim(), StringComparison.OrdinalIgnoreCase)) continue;
                     result.Add(info);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { RecordError(ex); }
@@ -102,25 +94,15 @@ public sealed class FileLogService : ILogService
             return result.OrderByDescending(log => log.StartedAt).ToArray();
         }, cancellationToken);
 
-    private static bool IsBeingWritten(string path)
-    {
-        try { using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None); return false; }
-        catch (IOException) { return true; }
-    }
-
     public async Task<string> ReadTailAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        var fullPath = Path.GetFullPath(filePath);
-        var relative = Path.GetRelativePath(LogDirectory, fullPath);
-        if (Path.IsPathRooted(relative) || relative == ".." || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
-            throw new ArgumentException("Log path must be inside the log directory.", nameof(filePath));
-        await using var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete,
-            4096, FileOptions.Asynchronous);
+        var fullPath = ValidateLogPath(filePath);
+        await using var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.Asynchronous);
         const int maxBytes = 256 * 1024;
         var length = stream.Length;
         var buffer = new byte[(int)Math.Min(length, maxBytes)];
-        var truncated = length > maxBytes;
-        if (truncated) stream.Seek(length - maxBytes, SeekOrigin.Begin);
+        if (length > maxBytes) stream.Seek(length - maxBytes, SeekOrigin.Begin);
         var count = 0;
         while (count < buffer.Length)
         {
@@ -128,64 +110,83 @@ public sealed class FileLogService : ILogService
             if (read == 0) break;
             count += read;
         }
-        // Skip only a partial UTF-8 code point; a single long line is still useful output.
         var start = 0;
-        if (truncated)
+        if (length > maxBytes)
             while (start < count && (buffer[start] & 0xC0) == 0x80) start++;
         return Encoding.UTF8.GetString(buffer, start, count - start);
+    }
+
+    public async Task<WorkLogInfo> GetInfoAsync(WorkLogInfo log, CancellationToken cancellationToken = default)
+    {
+        var path = ValidateLogPath(log.FilePath);
+        var metadataPath = path + ".meta.json";
+        if (!File.Exists(metadataPath)) return log;
+        var json = await File.ReadAllTextAsync(metadataPath, cancellationToken).ConfigureAwait(false);
+        var info = JsonSerializer.Deserialize(json, AppJsonContext.Default.WorkLogInfo);
+        if (info is null) return log;
+        var file = new FileInfo(path);
+        if (info.Status == WorkLogStatus.Running && !_operations.ContainsKey(info.Id))
+            info = info with { Status = WorkLogStatus.Interrupted };
+        return info with { FilePath = path, SizeBytes = file.Length };
+    }
+
+    private string ValidateLogPath(string filePath)
+    {
+        var fullPath = Path.GetFullPath(filePath);
+        var relative = Path.GetRelativePath(LogDirectory, fullPath);
+        if (Path.IsPathRooted(relative) || relative == ".." ||
+            relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            throw new ArgumentException("Log path must be inside the log directory.", nameof(filePath));
+        return fullPath;
     }
 
     private void RecordError(Exception exception)
     {
         LastError = exception.Message;
-        System.Diagnostics.Trace.WriteLine(exception);
+        _logger.Warning(exception, "Could not read the log archive");
     }
 
     public void Dispose()
     {
-        lock (_lifetimeGate)
+        lock (_gate)
         {
             if (_disposed) return;
             _disposed = true;
-            foreach (var operation in _operations.Values)
-                operation.Complete(ReferenceEquals(operation, _application) ? WorkLogStatus.Succeeded : WorkLogStatus.Interrupted);
+            foreach (var operation in _operations.Values) operation.Complete(WorkLogStatus.Interrupted);
         }
     }
 
     private sealed class OperationLog : IOperationLog
     {
-        private readonly FileLogService _owner;
+        private readonly SerilogLogArchive _owner;
+        private readonly ILogger _global;
+        private readonly Serilog.Core.Logger _file;
         private readonly object _gate = new();
         private WorkLogInfo _info;
-        private StreamWriter? _writer;
         private bool _completed;
 
-        public OperationLog(FileLogService owner, WorkLogInfo info)
+        public OperationLog(SerilogLogArchive owner, WorkLogInfo info, ILogger global)
         {
             _owner = owner;
             _info = info;
-            TryIo(() =>
-            {
-                Directory.CreateDirectory(owner.LogDirectory);
-                _writer = new StreamWriter(new FileStream(info.FilePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read),
-                    new UTF8Encoding(false)) { AutoFlush = true };
-                SaveMetadata();
-            });
-            Write(WorkLogLevel.Information, $"Started: {info.Title} | {info.Operation} | {info.Device}");
+            _global = global.ForContext("OperationId", info.Id).ForContext("Operation", info.Operation);
+            _file = new LoggerConfiguration().MinimumLevel.Verbose()
+                .WriteTo.File(info.FilePath, outputTemplate: "{Timestamp:O} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                .CreateLogger();
+            try { SaveMetadata(); }
+            catch { _file.Dispose(); throw; }
+            Write(LogEventLevel.Information, $"Started: {info.Title} | {info.Operation} | {info.Device}");
         }
 
         public string Id => _info.Id;
 
-        public void Write(WorkLogLevel level, string message, Exception? exception = null)
+        public void Write(LogEventLevel level, string message, Exception? exception = null)
         {
             lock (_gate)
             {
                 if (_completed) return;
-                TryIo(() =>
-                {
-                    _writer?.WriteLine($"{DateTimeOffset.Now.ToString("O", CultureInfo.InvariantCulture)} [{level}] {message}");
-                    if (exception is not null) _writer?.WriteLine(exception);
-                });
+                _global.Write(level, exception, "{Message}", message);
+                _file.Write(level, exception, "{Message}", message);
             }
         }
 
@@ -195,11 +196,13 @@ public sealed class FileLogService : ILogService
             lock (_gate)
             {
                 if (_completed) return;
-                Write(status == WorkLogStatus.Failed ? WorkLogLevel.Error : WorkLogLevel.Information, $"Completed: {status}");
+                Write(status == WorkLogStatus.Failed ? LogEventLevel.Error : LogEventLevel.Information,
+                    $"Completed: {status}");
                 _completed = true;
                 _info = _info with { Status = status, EndedAt = DateTimeOffset.Now };
-                TryIo(() => _writer?.Dispose());
-                TryIo(SaveMetadata);
+                _file.Dispose();
+                try { SaveMetadata(); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _owner.RecordError(ex); }
                 _owner._operations.TryRemove(Id, out _);
             }
         }
@@ -209,12 +212,6 @@ public sealed class FileLogService : ILogService
             var path = _info.FilePath + ".meta.json";
             File.WriteAllText(path + ".tmp", JsonSerializer.Serialize(_info, AppJsonContext.Default.WorkLogInfo));
             File.Move(path + ".tmp", path, true);
-        }
-
-        private void TryIo(Action action)
-        {
-            try { action(); }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _owner.RecordError(ex); }
         }
 
         public void Dispose() => Complete(WorkLogStatus.Interrupted);
